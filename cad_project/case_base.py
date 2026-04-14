@@ -3,6 +3,7 @@
 简单的长方体外壳，3mm壁厚，10mm深度
 """
 
+from case_top import top_case_model
 import ezdxf
 from build123d import *
 import build123d as b123d
@@ -16,14 +17,56 @@ from pcb_3d import pcb_part
 # 导入安装孔参数
 from mounting_holes import get_hole_positions, create_stepped_cylinder, create_usb_hole_cutout
 
+
+def create_stopper_cutout(length, width, depth, offset):
+    """创建止口环形切割体
+
+    从底壳顶部外侧切除材料，形成台阶结构。
+
+    Args:
+        length: 外壳长度
+        width: 外壳宽度
+        depth: 切割深度（从顶部向下）
+        offset: 需要切除的厚度（外侧切除量）
+
+    Returns:
+        环形切割体实体，中心在原点，底部在Z=0
+    """
+    # 计算切割体的内、外尺寸
+    outer_length = length
+    outer_width = width
+    inner_length = length - 2 * offset
+    inner_width = width - 2 * offset
+
+    # 创建外框
+    with BuildPart() as cutter:
+        Box(outer_length, outer_width, depth)
+
+    # 创建内框（高度+1确保完全穿透）
+    inner_box = Box(inner_length, inner_width, depth + 1)
+
+    # 获取实体
+    outer_solid = cutter.part.solid()
+
+    # 外框减去内框，得到环形切割体
+    ring_cutter = outer_solid - inner_box
+
+    return ring_cutter
+
+
 # 导入上壳模型
-from case_top import top_case_model
 
 # 常量
 SHELL_THICKNESS = 3.0  # mm，外壳壁厚
 CASE_LENGTH = 120.0  # mm，长度
 CASE_WIDTH = 85.0  # mm，宽度
 CASE_DEPTH = 12.0  # mm，深度
+CAVITY_FILLET_RADIUS = 2.0  # mm
+# 止口参数
+STOPPER_DEPTH = 2.5  # mm，止口深度（从顶部向下）
+STOPPER_THICKNESS = 1.5  # mm，止口处壁厚（原壁厚的一半）
+STOPPER_OFFSET = SHELL_THICKNESS - STOPPER_THICKNESS  # mm，需要切除的厚度（1.5mm）
+STOPPER_EDGE_FILLET = 0.3  # mm，止口边缘倒角半径
 
 # 创建外壳（底部和侧壁一体的中空盒子）
 with BuildPart() as outer:
@@ -50,7 +93,7 @@ offset = cavity_bottom - inner_box_bottom
 inner_box = inner_box.translate(Vector(0, 0, offset))
 
 # 内腔底部四角导角（半径2mm）- Z方向的4条垂直边缘
-CAVITY_FILLET_RADIUS = 2.0  # mm
+
 inner_box_solid = inner_box.solid()
 cavity_z_edges = [e for e in inner_box_solid.edges()
                   if abs(e.position_at(0).X - e.position_at(1).X) < 0.1
@@ -60,6 +103,74 @@ if cavity_z_edges:
 
 # 外壳减去内芯，得到中空外壳
 final_case = outer_solid - inner_box
+
+# 外壳四个外角垂直边缘导角（半径2mm）- 在止口切割之前进行
+FILLET_RADIUS_CORNER = 2.0  # 外角导角半径
+all_edges = final_case.edges()
+corner_edges = [
+    e for e in all_edges
+    if abs(e.position_at(0).X) > CASE_LENGTH / 2 - 1
+    and abs(e.position_at(0).Y) > CASE_WIDTH / 2 - 1
+    and abs(e.position_at(0).Z - e.position_at(1).Z) > 1  # 垂直边缘
+]
+print(f"外角垂直边缘数量: {len(corner_edges)}")
+if corner_edges:
+    final_case = final_case.fillet(FILLET_RADIUS_CORNER, corner_edges)
+
+# ========== 止口切割 ==========
+# 创建环形切割体，从顶部外侧切除1.5mm厚材料
+stopper_cutout = create_stopper_cutout(
+    length=CASE_LENGTH,
+    width=CASE_WIDTH,
+    depth=STOPPER_DEPTH,
+    offset=STOPPER_OFFSET
+)
+
+# 将切割体定位到顶部（顶部Z坐标为 CASE_DEPTH/2）
+top_z = CASE_DEPTH / 2
+stopper_cutout = stopper_cutout.translate(Vector(0, 0, top_z))
+
+# 应用切割
+final_case = final_case - stopper_cutout
+print(f"已创建止口: 深度{STOPPER_DEPTH}mm, 壁厚{STOPPER_THICKNESS}mm")
+
+# 止口区域四个外角导角（半径2mm）
+# 在止口切割后，对止口区域的角落边缘进行导角
+stopper_bottom_z = CASE_DEPTH / 2 - STOPPER_DEPTH
+stopper_top_z = CASE_DEPTH / 2
+all_edges = final_case.edges()
+
+# 寻找止口区域的角落垂直边缘
+# 条件：位置在四个角，是垂直边缘，且在止口高度范围内
+stopper_corner_edges = []
+for e in all_edges:
+    p0 = e.position_at(0)
+    p1 = e.position_at(1)
+
+    # 检查是否在四个角的位置
+    if not (abs(p0.X) > CASE_LENGTH / 2 - 2 and abs(p0.Y) > CASE_WIDTH / 2 - 2):
+        continue
+
+    # 检查是否是垂直边缘（两端Z坐标差大于1）
+    if abs(p0.Z - p1.Z) < 1:
+        continue
+
+    # 检查边缘是否在止口高度范围内（Z从3.5到6）
+    edge_z_min = min(p0.Z, p1.Z)
+    edge_z_max = max(p0.Z, p1.Z)
+    if edge_z_max > stopper_bottom_z and edge_z_min < stopper_top_z:
+        stopper_corner_edges.append(e)
+
+print(f"止口角落边缘数量: {len(stopper_corner_edges)}")
+
+if stopper_corner_edges:
+    try:
+        final_case = final_case.fillet(2.0, stopper_corner_edges)
+        print(f"止口角落导角成功: {len(stopper_corner_edges)}条")
+    except Exception as ex:
+        print(f"止口角落导角失败: {ex}")
+
+# ========== 止口切割完成 ==========
 
 # 圆柱参数
 HOLE_OFFSET = SHELL_THICKNESS + 4.0  # 内壁厚度 + 2mm偏移
@@ -112,22 +223,8 @@ print(
     f"已创建USB开孔: 宽{USB_HOLE_WIDTH}mm, 高{USB_HOLE_HEIGHT}mm, 厚{SHELL_THICKNESS}mm, X={USB_HOLE_X}")
 # ========== USB开孔完成 ==========
 
-# 底部四边导角（半径2mm）- 对外壳底部4个角落的垂直边缘导角
-FILLET_RADIUS_BOTTOM = 2.0  # 底部导角半径
-# 筛选底部角落的4条垂直边缘（只选竖直的角落边缘）
-all_edges = final_case.edges()
-corner_edges = [
-    e for e in all_edges
-    if abs(e.position_at(0).X) > CASE_LENGTH / 2 - 1
-    and abs(e.position_at(0).Y) > CASE_WIDTH / 2 - 1
-    and e.position_at(0).Z < 0
-    and abs(e.position_at(0).Z - e.position_at(1).Z) > 1  # 垂直边缘
-]
-print(f"角落垂直边缘数量: {len(corner_edges)}")
-# 对角落垂直边缘进行导角
-final_case = final_case.fillet(FILLET_RADIUS_BOTTOM, corner_edges)
-
 # 底部外围4条水平边缘的导角
+FILLET_RADIUS_BOTTOM = 2.0  # 底部导角半径
 # 获取z=-CASE_DEPTH/2处的所有水平边缘
 bottom_z = -CASE_DEPTH / 2
 all_edges = final_case.edges()
@@ -141,6 +238,20 @@ print(f"底部外围水平边缘数量: {len(bottom_edges)}")
 # 对底部外围水平边缘进行导角
 if bottom_edges:
     final_case = final_case.fillet(FILLET_RADIUS_BOTTOM, bottom_edges)
+
+# ========== 止口边缘倒角 ==========
+stopper_z = CASE_DEPTH / 2 - STOPPER_DEPTH
+stopper_edges = [
+    e for e in final_case.edges()
+    if abs(e.position_at(0).Z - stopper_z) < 0.1
+    and abs(e.position_at(1).Z - stopper_z) < 0.1
+    and (abs(e.position_at(0).X) > CASE_LENGTH / 2 - 2
+         or abs(e.position_at(0).Y) > CASE_WIDTH / 2 - 2)
+]
+if stopper_edges:
+    final_case = final_case.fillet(STOPPER_EDGE_FILLET, stopper_edges)
+    print(f"止口边缘倒角: {len(stopper_edges)}条")
+# ========== 止口边缘倒角完成 ==========
 
 print(f"外壳尺寸: {CASE_LENGTH} x {CASE_WIDTH} x {CASE_DEPTH} mm")
 print(f"壁厚: {SHELL_THICKNESS} mm")
