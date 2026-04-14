@@ -1,6 +1,6 @@
 """
 键盘上壳 - build123d
-用于盖在底座上，中间是大镂空矩形（类似箱子上盖）
+用于盖在底座上，右侧是大镂空矩形，左侧封闭区域有LED屏幕凹槽
 从RoundedRectangle圆角矩形拉伸建模，简化导角逻辑
 """
 
@@ -10,7 +10,7 @@ from ocp_vscode import show
 
 # 复用底座尺寸常量
 CASE_LENGTH = 120.0  # mm
-CASE_WIDTH = 50.0  # mm
+CASE_WIDTH = 85.0  # mm
 
 # 上壳参数
 TOP_HEIGHT = 5.0  # mm，上壳高度
@@ -21,12 +21,39 @@ FILLET_RADIUS = 2.0  # mm，外边框圆角
 HOLLOW_FILLET_RADIUS = 2.0  # mm，内腔小圆角
 TOP_BOTTOM_EDGE_FILLET = 1  # mm，顶面/底面角落垂直边缘导角
 
-# 计算镂空矩形尺寸
-HOLLOW_LENGTH = CASE_LENGTH - 2 * HOLLOW_MARGIN  # 110 mm
-HOLLOW_WIDTH = CASE_WIDTH - 2 * HOLLOW_MARGIN  # 40 mm
+# 屏幕台阶凹槽参数
+SCREEN_SIZE = 80.0  # mm，屏幕整体尺寸
+SCREEN_BORDER = 1.5  # mm，屏幕边框宽度（非显示区域）
+SCREEN_TOLERANCE = 0.5  # mm，配合余量
+
+# 顶面开口（显示区域可见）
+TOP_OPENING_SIZE = SCREEN_SIZE - 2 * SCREEN_BORDER  # 77mm，显示区域尺寸
+
+# 底面开口（屏幕推入口）
+BOTTOM_OPENING_SIZE = SCREEN_SIZE + SCREEN_TOLERANCE  # 80.5mm
+BOTTOM_OPENING_DEPTH = 3.0  # mm，从底面向上的台阶深度
+
+# 屏幕位置（左侧对齐，留2mm壁厚）
+# 屏幕左边缘从X=-58开始（留2mm壁厚），右边缘到X=22，中心在X=-18
+LEFT_WALL_THICKNESS = 2.0  # mm，左侧壁厚
+SCREEN_CENTER_X = -CASE_LENGTH / 2 + LEFT_WALL_THICKNESS + SCREEN_SIZE / 2  # -60 + 2 + 40 = -18
+SCREEN_CENTER_Y = 0  # 垂直居中
+
+# 中间隔断参数
+DIVIDER_WIDTH = 3.0  # mm，隔断宽度
+
+# 右侧镂空区域（从屏幕右侧X=22+隔断 到外壳右边缘X=60）
+SCREEN_RIGHT_EDGE = -CASE_LENGTH / 2 + LEFT_WALL_THICKNESS + SCREEN_SIZE  # -60 + 2 + 80 = 22
+RIGHT_HOLLOW_START_X = SCREEN_RIGHT_EDGE + DIVIDER_WIDTH  # 22 + 3 = 25
+RIGHT_HOLLOW_LENGTH = CASE_LENGTH / 2 - RIGHT_HOLLOW_START_X - HOLLOW_MARGIN  # 60 - 25 - 5 = 30mm
+RIGHT_HOLLOW_WIDTH = CASE_WIDTH - 2 * HOLLOW_MARGIN  # 75mm
+RIGHT_HOFFSET_X = (RIGHT_HOLLOW_START_X + CASE_LENGTH / 2 - HOLLOW_MARGIN) / 2  # 右侧区域中心X
 
 print(f"上壳尺寸: {CASE_LENGTH} x {CASE_WIDTH} x {TOP_HEIGHT} mm")
-print(f"镂空矩形: {HOLLOW_LENGTH} x {HOLLOW_WIDTH} mm")
+print(f"屏幕台阶: 顶面{TOP_OPENING_SIZE}x{TOP_OPENING_SIZE}mm, 底面{BOTTOM_OPENING_SIZE}x{BOTTOM_OPENING_SIZE}mm")
+print(f"台阶深度: {BOTTOM_OPENING_DEPTH}mm (从底面向上)")
+print(f"屏幕位置: ({SCREEN_CENTER_X}, {SCREEN_CENTER_Y})")
+print(f"右侧镂空: {RIGHT_HOLLOW_LENGTH} x {RIGHT_HOLLOW_WIDTH} mm")
 
 # ========== 创建上壳几何体 ==========
 
@@ -35,13 +62,40 @@ with BuildSketch() as outer_sk:
     RectangleRounded(CASE_LENGTH, CASE_WIDTH, radius=FILLET_RADIUS)
 outer_solid = extrude(outer_sk.sketch, amount=TOP_HEIGHT)
 
-# 创建内腔草图（带小圆角）
-with BuildSketch() as inner_sk:
-    RectangleRounded(HOLLOW_LENGTH, HOLLOW_WIDTH, radius=HOLLOW_FILLET_RADIUS)
-inner_solid = extrude(inner_sk.sketch, amount=TOP_HEIGHT + 1)
+# 创建右侧内腔草图（带小圆角）- 右侧区域镂空
+with BuildSketch() as right_hollow_sk:
+    RectangleRounded(RIGHT_HOLLOW_LENGTH, RIGHT_HOLLOW_WIDTH, radius=HOLLOW_FILLET_RADIUS)
+right_hollow_solid = extrude(right_hollow_sk.sketch, amount=TOP_HEIGHT + 1)
+# 将右侧镂空移动到正确位置
+right_hollow_solid = right_hollow_solid.translate(Vector(RIGHT_HOFFSET_X, 0, 0))
 
-# 外框减去内腔，得到回字形上壳
-top_case = outer_solid - inner_solid
+# 外框减去右侧内腔，得到上壳（左侧封闭，右侧镂空）
+top_case = outer_solid - right_hollow_solid
+
+# ========== 创建屏幕台阶凹槽 ==========
+# 屏幕从底部向上推入安装，边框卡在台阶上
+# 台阶结构：底面大开口向上3mm，上面是小开口贯穿
+
+# 1. 创建贯穿整个顶壳的小开口（显示区域，77mm）
+with BuildSketch() as top_opening_sk:
+    Rectangle(TOP_OPENING_SIZE, TOP_OPENING_SIZE)
+top_opening_solid = extrude(top_opening_sk.sketch, amount=TOP_HEIGHT + 1)
+top_opening_solid = top_opening_solid.translate(Vector(SCREEN_CENTER_X, SCREEN_CENTER_Y, 0))
+# 从顶壳减去顶面开口
+top_case = top_case - top_opening_solid
+
+# 2. 创建底面大开口（屏幕推入口，80.5mm，向上3mm）
+with BuildSketch() as bottom_opening_sk:
+    Rectangle(BOTTOM_OPENING_SIZE, BOTTOM_OPENING_SIZE)
+bottom_opening_solid = extrude(bottom_opening_sk.sketch, amount=BOTTOM_OPENING_DEPTH + 1)
+bottom_opening_solid = bottom_opening_solid.translate(Vector(SCREEN_CENTER_X, SCREEN_CENTER_Y, 0))
+# 从顶壳减去底面开口，形成台阶
+top_case = top_case - bottom_opening_solid
+
+print(f"已创建屏幕台阶凹槽:")
+print(f"  - 顶面开口: {TOP_OPENING_SIZE}x{TOP_OPENING_SIZE}mm (显示区域)")
+print(f"  - 底面开口: {BOTTOM_OPENING_SIZE}x{BOTTOM_OPENING_SIZE}mm, 深{BOTTOM_OPENING_DEPTH}mm")
+print(f"  - 台阶宽度: {(BOTTOM_OPENING_SIZE - TOP_OPENING_SIZE) / 2}mm")
 
 # ========== 外壳边缘导角 ==========
 # 由于XY平面边缘在RoundedRectangle阶段已经是圆角

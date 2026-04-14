@@ -22,7 +22,7 @@ from case_top import top_case_model
 # 常量
 SHELL_THICKNESS = 3.0  # mm，外壳壁厚
 CASE_LENGTH = 120.0  # mm，长度
-CASE_WIDTH = 50.0  # mm，宽度
+CASE_WIDTH = 85.0  # mm，宽度
 CASE_DEPTH = 10.0  # mm，深度
 
 # 创建外壳（底部和侧壁一体的中空盒子）
@@ -130,31 +130,31 @@ show((final_case, pcb_placed, top_case_placed), names=[
      "Keyboard_Case_Base", "PCB_Board", "Case_Top"], colors=["#EB8B50", "#2C3E50", "#27AE60"])
 
 
-# ========== 导出内框DXF ==========
+# # ========== 导出内框DXF ==========
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-doc = ezdxf.new()
-doc.layers.add("inner_cavity", color=7)
-msp = doc.modelspace()
+# doc = ezdxf.new()
+# doc.layers.add("inner_cavity", color=7)
+# msp = doc.modelspace()
 
-# 内框4个角点（以原点为中心）
-half_l = inner_length / 2
-half_w = inner_width / 2
-inner_points = [
-    (-half_l, -half_w),
-    (half_l, -half_w),
-    (half_l, half_w),
-    (-half_l, half_w),
-]
+# # 内框4个角点（以原点为中心）
+# half_l = inner_length / 2
+# half_w = inner_width / 2
+# inner_points = [
+#     (-half_l, -half_w),
+#     (half_l, -half_w),
+#     (half_l, half_w),
+#     (-half_l, half_w),
+# ]
 
-# 画4条线
-for i in range(4):
-    start = inner_points[i]
-    end = inner_points[(i + 1) % 4]
-    msp.add_line(start, end, dxfattribs={"layer": "inner_cavity", "color": 7})
+# # 画4条线
+# for i in range(4):
+#     start = inner_points[i]
+#     end = inner_points[(i + 1) % 4]
+#     msp.add_line(start, end, dxfattribs={"layer": "inner_cavity", "color": 7})
 
-dxf_output_path = os.path.join(SCRIPT_DIR, "inner_cavity_outline.dxf")
-doc.saveas(dxf_output_path)
-print(f"已导出内框DXF到: {dxf_output_path}")
-# ========== 导出DXF完成 ==========
+# dxf_output_path = os.path.join(SCRIPT_DIR, "inner_cavity_outline.dxf")
+# doc.saveas(dxf_output_path)
+# print(f"已导出内框DXF到: {dxf_output_path}")
+# # ========== 导出DXF完成 ==========
