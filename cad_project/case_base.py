@@ -23,7 +23,7 @@ from case_top import top_case_model
 SHELL_THICKNESS = 3.0  # mm，外壳壁厚
 CASE_LENGTH = 120.0  # mm，长度
 CASE_WIDTH = 85.0  # mm，宽度
-CASE_DEPTH = 10.0  # mm，深度
+CASE_DEPTH = 12.0  # mm，深度
 
 # 创建外壳（底部和侧壁一体的中空盒子）
 with BuildPart() as outer:
@@ -40,13 +40,21 @@ inner_depth = CASE_DEPTH - SHELL_THICKNESS  # 底部保留壁厚
 
 # 创建内芯并向上偏移
 inner_box = Box(inner_length, inner_width, inner_depth)
-inner_box = inner_box.translate(Vector(0, 0, SHELL_THICKNESS))
+# 计算正确的平移量：内腔底部应该在外壳底部以上SHELL_THICKNESS的位置
+# 外壳底部在Z=-CASE_DEPTH/2，内腔底部应该在Z=-CASE_DEPTH/2+SHELL_THICKNESS
+# inner_box默认中心在原点，底部在Z=-inner_depth/2
+# 所以平移量 = (-CASE_DEPTH/2+SHELL_THICKNESS) - (-inner_depth/2)
+cavity_bottom = -CASE_DEPTH/2 + SHELL_THICKNESS
+inner_box_bottom = -inner_depth/2
+offset = cavity_bottom - inner_box_bottom
+inner_box = inner_box.translate(Vector(0, 0, offset))
 
 # 内腔底部四角导角（半径2mm）- Z方向的4条垂直边缘
 CAVITY_FILLET_RADIUS = 2.0  # mm
 inner_box_solid = inner_box.solid()
-cavity_z_edges = [e for e in inner_box_solid.edges() if abs(e.position_at(0).Z - e.position_at(
-    1).Z) > 1 and (abs(e.position_at(0).Z - (-0.5)) < 0.1 or abs(e.position_at(1).Z - (-0.5)) < 0.1)]
+cavity_z_edges = [e for e in inner_box_solid.edges()
+                  if abs(e.position_at(0).X - e.position_at(1).X) < 0.1
+                  and abs(e.position_at(0).Y - e.position_at(1).Y) < 0.1]
 if cavity_z_edges:
     inner_box = inner_box_solid.fillet(CAVITY_FILLET_RADIUS, cavity_z_edges)
 
@@ -60,9 +68,25 @@ HOLE_OFFSET = SHELL_THICKNESS + 4.0  # 内壁厚度 + 2mm偏移
 hole_positions = get_hole_positions(inner_length, inner_width)
 
 # 创建台阶型圆柱（底层直径6mm高1mm + 上层直径4mm高3mm）
+# 计算圆柱的Z偏移量：圆柱应该放在内腔底部
+cavity_bottom = -CASE_DEPTH/2 + SHELL_THICKNESS
+cylinder_z_offset = cavity_bottom + 0.5  # 圆柱初始底部在Z=-0.5
+
 for i, (x, y) in enumerate(hole_positions, 1):
-    cylinder = create_stepped_cylinder(x, y)
-    final_case = final_case + cylinder
+    cylinder = create_stepped_cylinder(x, y, z_offset=cylinder_z_offset)
+    result = final_case.fuse(cylinder)
+    # 如果返回ShapeList，合并所有元素
+    if isinstance(result, list) and len(result) > 1:
+        # 逐个合并所有对象
+        final_case = result[0]
+        for obj in result[1:]:
+            final_case = final_case.fuse(obj)
+            if isinstance(final_case, list):
+                final_case = final_case[0]
+    elif isinstance(result, list):
+        final_case = result[0]
+    else:
+        final_case = result
     print(f"已创建第 {i} 个台阶型圆柱: 位置({x}, {y})")
 
 # ========== USB开孔切割 ==========
@@ -104,17 +128,19 @@ print(f"角落垂直边缘数量: {len(corner_edges)}")
 final_case = final_case.fillet(FILLET_RADIUS_BOTTOM, corner_edges)
 
 # 底部外围4条水平边缘的导角
-# 获取z=-5处的所有水平边缘
+# 获取z=-CASE_DEPTH/2处的所有水平边缘
+bottom_z = -CASE_DEPTH / 2
 all_edges = final_case.edges()
 bottom_edges = [
     e for e in all_edges
-    if abs(e.position_at(0).Z - (-5.0)) < 0.1
-    and abs(e.position_at(1).Z - (-5.0)) < 0.1
+    if abs(e.position_at(0).Z - bottom_z) < 0.1
+    and abs(e.position_at(1).Z - bottom_z) < 0.1
     and abs(e.position_at(0).X) > CASE_LENGTH / 2 - 1
 ]
 print(f"底部外围水平边缘数量: {len(bottom_edges)}")
 # 对底部外围水平边缘进行导角
-final_case = final_case.fillet(FILLET_RADIUS_BOTTOM, bottom_edges)
+if bottom_edges:
+    final_case = final_case.fillet(FILLET_RADIUS_BOTTOM, bottom_edges)
 
 print(f"外壳尺寸: {CASE_LENGTH} x {CASE_WIDTH} x {CASE_DEPTH} mm")
 print(f"壁厚: {SHELL_THICKNESS} mm")
