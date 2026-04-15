@@ -61,4 +61,12 @@ void pixel_increment_counter();
  */
 void pixel_switch_mode();
 
+/**
+ * @brief 显示分钟数 (0-59)
+ * @param minute 分钟数 (0-59)
+ *
+ * 在8x8像素屏上显示分钟数
+ */
+void pixel_set_minute(uint8_t minute);
+
 #endif // PIXEL_DISPLAY_H

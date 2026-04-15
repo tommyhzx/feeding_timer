@@ -263,3 +263,32 @@ void pixel_switch_mode()
     // 重置一些状态变量
     chaseIndex = 0;
 }
+
+/**
+ * @brief 显示分钟数 (0-59)
+ * @param minute 分钟数 (0-59)
+ *
+ * 在8x8像素屏上显示分钟数，使用蓝色显示
+ */
+void pixel_set_minute(uint8_t minute)
+{
+    if (minute > 59)
+    {
+        minute = 59;
+    }
+
+    // 清空像素屏
+    pixels.clear();
+
+    // 计算十位和个位
+    uint8_t tens = minute / 10;
+    uint8_t ones = minute % 10;
+
+    // 绘制十位数字（左对齐，起始x=0）
+    draw_digit(0, 1, tens, pixels.Color(0, 100, 255));
+
+    // 绘制个位数字（右对齐，起始x=5，留2像素间隔）
+    draw_digit(5, 1, ones, pixels.Color(0, 100, 255));
+
+    pixels.show();
+}

@@ -37,43 +37,48 @@ void loop()
     // 更新Wi-Fi状态（NTP同步、重连等）
     wifi_update(now);
 
-    // GPIO调试信息 - 每1000ms打印一次
-    static uint32_t lastDebugTime = 0;
-    static uint32_t lastTimeDisplay = 0;
-    if (now - lastDebugTime >= 1000)
+    // 每秒更新一次像素屏显示的分钟数
+    static uint32_t lastSecondUpdate = 0;
+    static int8_t lastDisplayedMinute = -1;
+    if (now - lastSecondUpdate >= 1000)
     {
-        lastDebugTime = now;
-        bool rowState = digitalRead(7);  // ROW_PIN
-        Serial.print("[DEBUG] GPIO7(row) = ");
-        Serial.print(rowState ? "HIGH (未按下)" : "LOW (已按下)");
-        Serial.print(" | GPIO4(col) = ");
-        Serial.print(digitalRead(4));  // COL_PIN
-        Serial.println(" | System running");
-
-        // 每60秒显示一次当前时间
-        if (now - lastTimeDisplay >= 60000)
+        lastSecondUpdate = now;
+        int hour, minute, second;
+        if (wifi_get_ntp_time(&hour, &minute, &second))
         {
-            lastTimeDisplay = now;
-            int hour, minute, second;
-            if (wifi_get_ntp_time(&hour, &minute, &second))
+            // 当分钟变化时更新像素屏
+            if (minute != lastDisplayedMinute)
             {
-                Serial.print("[时间] ");
-                if (hour < 10) Serial.print("0");
-                Serial.print(hour);
-                Serial.print(":");
-                if (minute < 10) Serial.print("0");
-                Serial.print(minute);
-                Serial.print(":");
-                if (second < 10) Serial.print("0");
-                Serial.print(second);
-                Serial.print(" | Wi-Fi: ");
-                Serial.println(wifi_get_status_str());
+                lastDisplayedMinute = minute;
+                pixel_set_minute(minute);
             }
-            else
-            {
-                Serial.print("[时间] 未同步 | Wi-Fi: ");
-                Serial.println(wifi_get_status_str());
-            }
+        }
+    }
+
+    // 每60秒显示一次当前时间到串口
+    static uint32_t lastTimeDisplay = 0;
+    if (now - lastTimeDisplay >= 60000)
+    {
+        lastTimeDisplay = now;
+        int hour, minute, second;
+        if (wifi_get_ntp_time(&hour, &minute, &second))
+        {
+            Serial.print("[时间] ");
+            if (hour < 10) Serial.print("0");
+            Serial.print(hour);
+            Serial.print(":");
+            if (minute < 10) Serial.print("0");
+            Serial.print(minute);
+            Serial.print(":");
+            if (second < 10) Serial.print("0");
+            Serial.print(second);
+            Serial.print(" | Wi-Fi: ");
+            Serial.println(wifi_get_status_str());
+        }
+        else
+        {
+            Serial.print("[时间] 未同步 | Wi-Fi: ");
+            Serial.println(wifi_get_status_str());
         }
     }
 
