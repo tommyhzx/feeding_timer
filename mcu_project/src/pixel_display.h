@@ -40,4 +40,25 @@ void pixel_update(uint32_t now);
  */
 void pixel_set_feedback(bool pressed);
 
+/**
+ * @brief 设置并显示0-99的数字
+ * @param number 要显示的数字 (0-99)
+ *
+ * 在8x8像素屏上显示两位数，十位在左侧，个位在右侧
+ */
+void pixel_set_number(uint8_t number);
+
+/**
+ * @brief 计数器+1并刷新显示
+ *
+ * 超过99后回到0
+ */
+void pixel_increment_counter();
+
+/**
+ * @brief 手动切换像素屏演示模式
+ * 在三种模式间循环切换：彩虹渐变、跑马灯、随机闪烁
+ */
+void pixel_switch_mode();
+
 #endif // PIXEL_DISPLAY_H

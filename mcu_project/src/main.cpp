@@ -1,40 +1,33 @@
 #include <Arduino.h>
-#include <USBHIDKeyboard.h>
 #include "keyboard_module.h"
 #include "pixel_display.h"
 
 // ========== 全局对象 ==========
 
-USBHIDKeyboard Keyboard;
-
 void setup()
 {
     Serial.begin(115200);
     delay(1000); // 等待 USB CDC 初始化完成
-    Serial.println("=== ESP32-S3 Keyboard + Pixel Display ===");
-
-    // 初始化USB HID键盘
-    Keyboard.begin();
-    Serial.println("USB HID Keyboard initialized");
+    Serial.println("=== ESP32-S3 Button + Pixel Display ===");
 
     // 初始化像素屏模块 (包含RGB LED)
     pixel_init();
 
-    // 初始化键盘模块
+    // 初始化按键模块
     keyboard_init();
 
     Serial.println("System Ready!");
-    Serial.println("Press keys to test...");
+    Serial.println("Press button to increment counter (0-99)...");
 }
 
 void loop()
 {
     uint32_t now = millis();
 
-    // 更新像素屏显示效果
-    pixel_update(now);
+    // 计数器模式下不需要更新像素屏动画
+    // pixel_update(now);  // 已禁用演示模式
 
-    // 更新键盘状态
+    // 更新按键状态
     keyboard_update(now);
 
     // GPIO调试信息 - 每1000ms打印一次
