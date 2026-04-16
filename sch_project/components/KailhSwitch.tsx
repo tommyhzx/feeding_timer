@@ -1,4 +1,24 @@
-import { CPG151101D213FootprintData, CPG151101D213MountingHole } from "./footprints/CPG151101D213";
+/**
+ * Kailh CPG151101D213 Mechanical Keyboard Switch
+ * C400235 - LCSC Part Number
+ * Through-hole switch with 2 pins and central mounting hole
+ */
+
+type PinData = {
+  portHints: string[];
+  pcbX: number;
+  pcbY: number;
+  width: number;
+  height: number;
+};
+
+// Pin and mounting hole data (mounting hole at center 0,0)
+const PINS: PinData[] = [
+  { portHints: ["pin1"], pcbX: -3.81, pcbY: 2.54, width: 2.4, height: 2.4 },
+  { portHints: ["pin2"], pcbX: 2.54, pcbY: 5.08, width: 2.4, height: 2.4 },
+];
+
+const MOUNTING_HOLE = { pcbX: 0, pcbY: 0, diameter: 4.2 };
 
 export interface KailhSwitchProps {
   name: string;
@@ -9,11 +29,6 @@ export interface KailhSwitchProps {
   schY?: number;
 }
 
-/**
- * Kailh CPG151101D213 Mechanical Keyboard Switch
- * C400235 - LCSC Part Number
- * Through-hole switch with 2 pins and central mounting hole
- */
 export const KailhSwitch = ({
   name,
   pcbX,
@@ -22,24 +37,16 @@ export const KailhSwitch = ({
   schX,
   schY,
 }: KailhSwitchProps) => {
-  const hasCustomPosition =
-    pcbX !== undefined ||
-    pcbY !== undefined ||
-    pcbRotation !== undefined ||
-    schX !== undefined ||
-    schY !== undefined;
+  // Build position props object, excluding undefined values
+  const positionProps = {
+    ...(pcbX !== undefined && { pcbX }),
+    ...(pcbY !== undefined && { pcbY }),
+    ...(pcbRotation !== undefined && { pcbRotation }),
+    ...(schX !== undefined && { schX }),
+    ...(schY !== undefined && { schY }),
+  };
 
-  const groupProps: any = {};
-  if (pcbX !== undefined) groupProps.pcbX = pcbX;
-  if (pcbY !== undefined) groupProps.pcbY = pcbY;
-  if (pcbRotation !== undefined) groupProps.pcbRotation = pcbRotation;
-  if (schX !== undefined) groupProps.schX = schX;
-  if (schY !== undefined) groupProps.schY = schY;
-
-  // Get pin positions from footprint data
-  const pin1 = CPG151101D213FootprintData[0];
-  const pin2 = CPG151101D213FootprintData[1];
-  const mountingHole = CPG151101D213MountingHole;
+  const hasCustomPosition = Object.keys(positionProps).length > 0;
 
   const switchElement = (
     <switch
@@ -59,29 +66,28 @@ export const KailhSwitch = ({
           />
           {/* 中心安装孔 */}
           <hole
-            pcbX={mountingHole.pcbX}
-            pcbY={mountingHole.pcbY}
-            diameter={`${mountingHole.diameter}mm`}
+            pcbX={MOUNTING_HOLE.pcbX}
+            pcbY={MOUNTING_HOLE.pcbY}
+            diameter={`${MOUNTING_HOLE.diameter}mm`}
           />
-          {/* 引脚1 */}
+          {/* 引脚 */}
           <platedhole
-            portHints={pin1.portHints}
-            pcbX={pin1.pcbX}
-            pcbY={pin1.pcbY}
+            portHints={PINS[0].portHints}
+            pcbX={PINS[0].pcbX}
+            pcbY={PINS[0].pcbY}
             shape="circular_hole_with_rect_pad"
             holeDiameter="1.6mm"
-            rectPadWidth={`${pin1.width}mm`}
-            rectPadHeight={`${pin1.height}mm`}
+            rectPadWidth={`${PINS[0].width}mm`}
+            rectPadHeight={`${PINS[0].height}mm`}
           />
-          {/* 引脚2 */}
           <platedhole
-            portHints={pin2.portHints}
-            pcbX={pin2.pcbX}
-            pcbY={pin2.pcbY}
+            portHints={PINS[1].portHints}
+            pcbX={PINS[1].pcbX}
+            pcbY={PINS[1].pcbY}
             shape="circular_hole_with_rect_pad"
             holeDiameter="1.6mm"
-            rectPadWidth={`${pin2.width}mm`}
-            rectPadHeight={`${pin2.height}mm`}
+            rectPadWidth={`${PINS[1].width}mm`}
+            rectPadHeight={`${PINS[1].height}mm`}
           />
         </footprint>
       }
@@ -89,7 +95,7 @@ export const KailhSwitch = ({
   );
 
   if (hasCustomPosition) {
-    return <group {...groupProps}>{switchElement}</group>;
+    return <group {...positionProps}>{switchElement}</group>;
   }
   return switchElement;
 };
