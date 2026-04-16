@@ -15,8 +15,8 @@ SCREEN_HOLE_DIA = 3.0   # mm，固定孔直径
 SCREEN_HOLE_OFFSET = 3.0  # mm，孔距边缘距离
 
 # ========== 外壳参数 ==========
-BOTTOM_THICKNESS = 2.0  # mm，底板厚度
-TOTAL_HEIGHT = 13.0     # mm，总高度
+BOTTOM_THICKNESS = 25.0  # mm，底板厚度
+TOTAL_HEIGHT = 40.0     # mm，总高度
 WALL_THICKNESS = 2.0    # mm，壁厚
 FILLET_RADIUS = 2.0     # mm，外框圆角半径
 INNER_FILLET = 2.0      # mm，内腔圆角半径
@@ -28,8 +28,9 @@ STEP2_DIAMETER = 2.8    # 上层直径
 STEP2_HEIGHT = 3.0      # 上层高度
 
 # ========== 计算尺寸 ==========
-FRAME_LENGTH = SCREEN_LENGTH + 2 * WALL_THICKNESS   # 79mm
-FRAME_WIDTH = SCREEN_WIDTH + 2 * WALL_THICKNESS     # 36mm
+TOTAL_LENGTH = 120.0    # mm，外壳总长度（用于与PCB外壳对齐）
+FRAME_LENGTH = TOTAL_LENGTH  # 115mm
+FRAME_WIDTH = SCREEN_WIDTH + 2 * WALL_THICKNESS + 10.0     # 46mm，宽度增加10mm
 
 # 计算固定柱位置（相对于中心）
 hole_x = SCREEN_LENGTH / 2 - SCREEN_HOLE_OFFSET   # 34.5mm
@@ -65,7 +66,14 @@ inner_box_bottom = -inner_height / 2
 cavity_bottom = -TOTAL_HEIGHT / 2 + BOTTOM_THICKNESS
 offset_z = cavity_bottom - inner_box_bottom
 
-inner_box = inner_box.translate(Vector(0, 0, offset_z))
+# 计算Y方向偏移：内腔底部距离外壳底部WALL_THICKNESS
+# 外壳底部在Y=-FRAME_WIDTH/2，内腔底部应该在Y=-FRAME_WIDTH/2 + WALL_THICKNESS
+# inner_box默认中心在原点，底部在Y=-inner_width/2
+inner_box_bottom_y = -inner_width / 2
+cavity_bottom_y = -FRAME_WIDTH / 2 + WALL_THICKNESS
+offset_y = cavity_bottom_y - inner_box_bottom_y
+
+inner_box = inner_box.translate(Vector(0, offset_y, offset_z))
 
 # 外框减内腔，形成带底板的盒子
 frame = outer_solid - inner_box
@@ -199,6 +207,32 @@ slot_box = slot_box.translate(
 
 frame = frame - slot_box
 print(f"已开走线槽: {SLOT_LENGTH} x {SLOT_WIDTH} x {SLOT_HEIGHT} mm，位置在X方向右侧侧面")
+
+
+# ========== 9. Y方向顶部平面向内开PCB槽 ==========
+# PCB槽尺寸（在XZ平面上）
+PCB_SLOT_LENGTH = 115.0   # mm，槽长度（X方向）
+PCB_SLOT_WIDTH = 35.0     # mm，槽宽度（Z方向）
+PCB_SLOT_DEPTH = 5.0      # mm，槽深度（Y方向，向内挖）
+
+# 槽位置：
+# X: 居中，范围 [-57.5, 57.5]
+# Y: 从外表面(Y=23mm，即FRAME_WIDTH/2)向内延伸3mm到Y=20mm
+# Z: 居中，范围 [-17.5, 17.5]
+with BuildPart() as pcb_slot_builder:
+    Box(PCB_SLOT_LENGTH, PCB_SLOT_DEPTH, PCB_SLOT_WIDTH,
+        align=(Align.CENTER, Align.MAX, Align.CENTER))
+pcb_slot_box = pcb_slot_builder.part.solid()
+
+# align=(CENTER, MAX, CENTER)后，box范围是：
+# X: [-57.5, 57.5], Y: [0, 3], Z: [-17.5, 17.5]
+# 需要移动到Y方向外表面位置：Y从FRAME_WIDTH/2向内延伸
+pcb_slot_box = pcb_slot_box.translate(
+    Vector(0, FRAME_WIDTH / 2, 0))
+
+frame = frame - pcb_slot_box
+print(
+    f"已开PCB槽: {PCB_SLOT_LENGTH} x {PCB_SLOT_WIDTH} x {PCB_SLOT_DEPTH} mm (X×Z×Y)，位置在Y方向顶部向内延伸")
 
 
 # ========== 导出模型供其他模块使用 ==========
