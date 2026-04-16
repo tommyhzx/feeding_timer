@@ -16,22 +16,32 @@ STEP2_DIAMETER = 4.0  # 上层直径4mm
 STEP2_HEIGHT = 3.0    # 上层高度3mm
 
 
-def create_stepped_cylinder(x, y, z_offset=0):
+def create_stepped_cylinder(x, y, z_offset=0, step1_dia=None, step1_height=None, step2_dia=None, step2_height=None):
     """创建台阶型圆柱
 
     Args:
         x, y: 圆柱中心位置
         z_offset: Z方向偏移量（可选）
+        step1_dia: 底层直径（可选，默认使用 STEP1_DIAMETER）
+        step1_height: 底层高度（可选，默认使用 STEP1_HEIGHT）
+        step2_dia: 上层直径（可选，默认使用 STEP2_DIAMETER）
+        step2_height: 上层高度（可选，默认使用 STEP2_HEIGHT）
 
     Returns:
         台阶型圆柱实体
     """
+    # 使用传入参数或默认常量
+    d1 = step1_dia if step1_dia is not None else STEP1_DIAMETER
+    h1 = step1_height if step1_height is not None else STEP1_HEIGHT
+    d2 = step2_dia if step2_dia is not None else STEP2_DIAMETER
+    h2 = step2_height if step2_height is not None else STEP2_HEIGHT
+
     with BuildPart(Location(Vector(x, y, 0))) as stepped_cyl:
-        # 底层圆柱（直径6mm，高1mm）
-        Cylinder(radius=STEP1_DIAMETER/2, height=STEP1_HEIGHT)
-        # 上层圆柱（直径4mm，高3mm），在Z方向向上偏移STEP1_HEIGHT
-        with Locations(Location(Vector(0, 0, STEP1_HEIGHT))):
-            Cylinder(radius=STEP2_DIAMETER/2, height=STEP2_HEIGHT)
+        # 底层圆柱
+        Cylinder(radius=d1/2, height=h1)
+        # 上层圆柱，在Z方向向上偏移底层高度
+        with Locations(Location(Vector(0, 0, h1))):
+            Cylinder(radius=d2/2, height=h2)
     # 将整个台阶圆柱向上平移z_offset
     result = stepped_cyl.part.solid()
     if z_offset != 0:
