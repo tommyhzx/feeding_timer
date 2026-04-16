@@ -8,28 +8,22 @@ import { ESP32S3WROOM1N16R8 } from "../components/ESP32S3WROOM1N16R8";
  * - Startup circuit (RST pull-up 10kΩ, GPIO0 pull-down 10kΩ)
  *
  * ═══════════════════════════════════════════════════════════════
- * 对外输出信号 (EXPORTED SIGNALS)
+ * 对外接口信号 (EXPORTED SIGNALS)
  * ═══════════════════════════════════════════════════════════════
- * 输入信号：
- *   • PWR_3V3    → 3.3V电源输入
- *   • ROW0       → 行0 (GPIO4)
- *   • ROW1       → 行1 (GPIO5)
- *   • COL0       → 列0 (GPIO6)
- *   • COL1       → 列1 (GPIO7)
- *   • COL2       → 列2 (GPIO8)
+ * 电源信号：
+ *   • net.ESP32_3V3  → 3.3V电源 (内部已连接到 ESP32 pin1, pin2)
+ *   • net.GND        → 公共地 (内部已连接到 ESP32 GND引脚)
  *
- * 输出信号：
- *   • ROW0       → 连接到外部键盘矩阵行
- *   • ROW1       → 连接到外部键盘矩阵行
- *   • COL0-COL2  → 连接到外部键盘矩阵列
+ * GPIO引脚（可用于外部连接）：
+ *   • ${name}_ESP32.pin4  → GPIO4 (Mode 按键)
+ *   • ${name}_ESP32.pin6  → GPIO6 (Enter 按键)
  *
  * ═══════════════════════════════════════════════════════════════
  * Props:
  * - name: 组件名称前缀 (默认: "MCU")
  * - pcbX, pcbY: PCB位置
+ * - pcbRotation: PCB旋转角度 (默认: "0deg")
  * - schX, schY: 原理图位置
- * - rowPins: 行信号网络 (e.g., ["net.ROW0", "net.ROW1"])
- * - colPins: 列信号网络 (e.g., ["net.COL0", "net.COL1", "net.COL2"])
  */
 export const ESP32S3WROOM16R8Module = (props: {
   /** 组件名称前缀 (默认: "MCU") */
@@ -44,10 +38,6 @@ export const ESP32S3WROOM16R8Module = (props: {
   schX?: number;
   /** 原理图 Y坐标 (默认: 0) */
   schY?: number;
-  /** 行信号网络 (e.g., ["net.ROW0", "net.ROW1"]) */
-  rowPins: string[];
-  /** 列信号网络 (e.g., ["net.COL0", "net.COL1", "net.COL2"]) */
-  colPins: string[];
 }) => {
   const {
     name = "MCU",
@@ -56,8 +46,6 @@ export const ESP32S3WROOM16R8Module = (props: {
     pcbRotation = "0deg",
     schX = 0,
     schY = 0,
-    rowPins,
-    colPins,
   } = props;
 
   return (
@@ -119,16 +107,7 @@ export const ESP32S3WROOM16R8Module = (props: {
       <trace from={`${name}_R_BOOT.pin1`} to={`${name}_ESP32.pin36`} />
       <trace from={`${name}_R_BOOT.pin2`} to="net.GND" />
 
-      {/* ========== 对外接口信号 (EXPORTED SIGNALS) ========== */}
-
-      {/* ===== 键盘矩阵 ROW 接口 (GPIO4, GPIO5) ===== */}
-      <trace from={`${name}_ESP32.pin4`} to={rowPins[0]} />
-      <trace from={`${name}_ESP32.pin5`} to={rowPins[1]} />
-
-      {/* ===== 键盘矩阵 COL 接口 (GPIO6, GPIO7, GPIO8) ===== */}
-      <trace from={`${name}_ESP32.pin6`} to={colPins[0]} />
-      <trace from={`${name}_ESP32.pin7`} to={colPins[1]} />
-      <trace from={`${name}_ESP32.pin12`} to={colPins[2]} />
+      {/* 注意: GPIO4 (pin4) 和 GPIO6 (pin6) 引脚已预留，可在 index.circuit.tsx 中连接外部设备 */}
     </group>
   );
 };
@@ -140,6 +119,4 @@ export type ESP32S3WROOM16R8ModuleProps = {
   pcbRotation?: string;
   schX?: number;
   schY?: number;
-  rowPins: string[];
-  colPins: string[];
 };
