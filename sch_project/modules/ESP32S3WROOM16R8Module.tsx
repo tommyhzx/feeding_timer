@@ -5,7 +5,6 @@ import { ESP32S3WROOM1N16R8 } from "../components/ESP32S3WROOM1N16R8";
  *
  * Encapsulates:
  * - ESP32-S3-WROOM-1-N16R8 module (44pin, 22x2)
- * - Startup circuit (RST pull-up 10kΩ, GPIO0 pull-down 10kΩ)
  *
  * ═══════════════════════════════════════════════════════════════
  * 对外接口信号 (EXPORTED SIGNALS)
@@ -67,24 +66,6 @@ export const ESP32S3WROOM16R8Module = (props: {
       pcbY={0} 
       />
 
-      {/* RST 上拉电阻 10kΩ */}
-      <resistor
-        name={`${name}_R_RST`}
-        resistance="10kΩ"
-        footprint="0603"
-        pcbX={-18} 
-        pcbY={20} 
-      />
-
-      {/* GPIO0 下拉电阻 10kΩ (正常启动) */}
-      <resistor
-        name={`${name}_R_BOOT`}
-        resistance="10kΩ"
-        footprint="0603"
-        pcbX={18}
-        pcbY={-6.35}
-      />
-
       {/* ========== 内部走线 ========== */}
 
       {/* ===== 电源连接 ===== */}
@@ -97,15 +78,6 @@ export const ESP32S3WROOM16R8Module = (props: {
       <trace from={`${name}_ESP32.pin23`} to="net.GND" />
       <trace from={`${name}_ESP32.pin43`} to="net.GND" />
       <trace from={`${name}_ESP32.pin44`} to="net.GND" />
-
-      {/* ===== 启动电路 ===== */}
-      {/* RST 上拉到 3.3V */}
-      <trace from={`${name}_R_RST.pin1`} to="net.ESP32_3V3" />
-      <trace from={`${name}_R_RST.pin2`} to={`${name}_ESP32.pin3`} />
-
-      {/* GPIO0 下拉到地 */}
-      <trace from={`${name}_R_BOOT.pin1`} to={`${name}_ESP32.pin36`} />
-      <trace from={`${name}_R_BOOT.pin2`} to="net.GND" />
 
       {/* 注意: GPIO4 (pin4) 和 GPIO6 (pin6) 引脚已预留，可在 index.circuit.tsx 中连接外部设备 */}
     </group>

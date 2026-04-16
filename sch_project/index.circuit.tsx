@@ -36,7 +36,7 @@ export default () => (
     <MAX7219Module
       name="DISP"
       pcbX={10}
-      pcbY={-18}
+      pcbY={-14}
       schX={-10}
       schY={5}
     />
@@ -69,9 +69,8 @@ export default () => (
     <trace from="MCU_ESP32.GPIO15" to="DISP_J1.pin5" />
 
     {/* ========== 安装孔 (与 case_base.py 圆柱对齐) ========== */}
-    <hole name="MH1" diameter="4mm" pcbX={-53} pcbY={-18} />
-    <hole name="MH2" diameter="4mm" pcbX={53} pcbY={-18} />
-    <hole name="MH3" diameter="4mm" pcbX={-53} pcbY={18} />
-    <hole name="MH4" diameter="4mm" pcbX={53} pcbY={18} />
+    <hole name="MH1" diameter="4mm" pcbX={-53} pcbY={0} />
+    <hole name="MH2" diameter="4mm" pcbX={53} pcbY={-13} />
+    <hole name="MH3" diameter="4mm" pcbX={53} pcbY={13} />
   </board>
 );
