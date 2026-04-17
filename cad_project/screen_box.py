@@ -41,6 +41,11 @@ CABLE_HOLE_DEPTH = WALL_THICKNESS + 0.5  # 2.5mm，穿透槽壁
 # ========== 导角参数 ==========
 FILLET_RADIUS = 2.0  # mm，外框圆角半径
 
+# ========== 立柱固定螺丝孔参数 ==========
+STRUT_MOUNT_HOLE_DIA = 2.5  # mm，M2螺丝通孔
+STRUT_MOUNT_HOLE_DEPTH = WALL_THICKNESS + 1  # 3mm，穿透壁厚并稍深
+STRUT_MOUNT_HOLE_X = 19.5  # mm，X方向位置（与立柱对齐）
+
 print(f"屏幕盒子设计")
 print(f"屏幕尺寸: {SCREEN_LENGTH} x {SCREEN_WIDTH} mm")
 print(f"外部尺寸: {OUTER_LENGTH} x {OUTER_WIDTH} x {BOX_DEPTH} mm")
@@ -141,7 +146,28 @@ cable_hole = cable_hole.translate(
 screen_box = screen_box - cable_hole
 print(f"已在右侧壁开走线孔: {CABLE_HOLE_LENGTH} x {CABLE_HOLE_WIDTH} mm")
 
-# ========== 5. 外角边缘导角 ==========
+# ========== 5. 背面开立柱固定螺丝孔 ==========
+# 在屏幕盒背面（-Z方向）开两个螺丝孔，用于固定立柱
+for hole_x in [-STRUT_MOUNT_HOLE_X, STRUT_MOUNT_HOLE_X]:
+    with BuildPart() as hole_builder:
+        Cylinder(STRUT_MOUNT_HOLE_DIA / 2, STRUT_MOUNT_HOLE_DEPTH,
+                 align=(Align.CENTER, Align.CENTER, Align.MIN))
+    hole = hole_builder.part.solid()
+
+    # 定位孔：在背面（-Z方向），XY平面指定位置
+    # 盒子背面在 Z = -BOX_DEPTH/2 = -7.5mm
+    # 孔从背面向内开，中心应该在背面稍内位置
+    hole_z_pos = -BOX_DEPTH / 2 - STRUT_MOUNT_HOLE_DEPTH / 2 + 0.5
+    hole_pos = Vector(hole_x, 0, hole_z_pos)
+    hole = hole.translate(hole_pos)
+
+    # 开孔
+    screen_box = screen_box - hole
+    print(f"  已在背面开立柱固定孔: X={hole_x}mm, Z={hole_z_pos}mm")
+
+print(f"已背面开2个立柱固定螺丝孔（M2）")
+
+# ========== 6. 外角边缘导角 ==========
 all_edges = screen_box.edges()
 
 # 选择需要倒角的边缘：外角垂直边缘

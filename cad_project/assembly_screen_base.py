@@ -35,6 +35,9 @@ SUPPORT_WIDTH = SCREEN_BOX_DEPTH    # 15mm，Y方向（旋转后的底板投影�
 SUPPORT_HEIGHT = GAP_HEIGHT         # 20mm，支柱高度
 SUPPORT_THICKNESS = 2.0  # mm，支撑板壁厚
 
+# ========== 立柱固定螺丝孔参数 ==========
+STRUT_MOUNT_HOLE_DIA = 2.5  # mm，M2螺丝通孔
+
 print(f"内部结构装配设计")
 print(f"底座尺寸: {BASE_LENGTH} x {BASE_WIDTH} x {BASE_THICKNESS} mm")
 print(f"屏幕盒尺寸: {SCREEN_BOX_LENGTH} x {SCREEN_BOX_WIDTH} x {SCREEN_BOX_DEPTH} mm")
@@ -122,13 +125,43 @@ for i, (x, y) in enumerate(strut_positions, 1):
             align=(Align.CENTER, Align.CENTER, Align.MIN))
     strut = strut_builder.part.solid()
 
+    # 在立柱+Y侧表面开螺丝孔
+    # 计算孔深：需要穿透8mm立柱宽度
+    hole_depth = STRUT_SIZE + 2  # 10mm，确保穿透
+    with BuildPart() as hole_builder:
+        Cylinder(STRUT_MOUNT_HOLE_DIA / 2, hole_depth,
+                 align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # 旋转圆柱使其沿Y轴（默认是沿Z轴）
+    hole = hole_builder.part.solid().rotate(Axis.X, 90)
+
+    # 计算孔的位置（相对于立柱中心）
+    # 立柱中心Y坐标
+    strut_center_y = y + screen_box_y_center + STRUT_Y_OFFSET
+
+    # 孔的Y位置：从立柱+Y表面向内开
+    # 使用align=(Align.CENTER, Align.CENTER, Align.MIN)后，圆柱Y范围是[0, depth]
+    # 圆柱中心在depth/2，需要调整以与屏幕盒孔对齐
+    hole_y_local = hole_depth / 2 + 0.5  # 5.5mm
+    hole_y = hole_y_local
+
+    # 孔的Z位置：立柱高度减去SCREEN_BOX_WIDTH的一半
+    # 这样可以与屏幕盒上的孔对齐
+    hole_z_local = STRUT_HEIGHT - SCREEN_BOX_WIDTH / 2
+    hole_z = hole_z_local
+
+    # 定位孔（相对立柱中心）
+    hole = hole.translate(Vector(0, hole_y, hole_z))
+
+    # 在立柱上开孔
+    strut = strut - hole
+    print(f"  支柱{i} 已在+Y侧开螺丝孔: 相对Y={hole_y_local}mm, 相对Z={hole_z_local}mm")
+
     # 移动支柱到正确位置
     # align=(CENTER, CENTER, MIN)后，支柱Z范围是[0, SUPPORT_HEIGHT]
     # 需要移动到：XY平面对应位置，Z从底座顶面(BASE_THICKNESS/2=1)开始
-    final_pos = Vector(x, y + screen_box_y_center +
-                       STRUT_Y_OFFSET, BASE_THICKNESS/2)
+    final_pos = Vector(x, strut_center_y, BASE_THICKNESS/2)
     print(
-        f"  支柱{i} 位置: x={x}, y={y + screen_box_y_center + STRUT_Y_OFFSET}, z={BASE_THICKNESS/2}")
+        f"  支柱{i} 位置: x={x}, y={strut_center_y}, z={BASE_THICKNESS/2}")
     strut = strut.translate(final_pos)
     support_parts.append(strut)
 
