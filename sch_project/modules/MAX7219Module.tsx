@@ -18,6 +18,7 @@ export interface MAX7219ModuleProps {
   pcbY?: number;
   schX?: number;
   schY?: number;
+  pcbRotation?: string;
 }
 
 export const MAX7219Module = ({
@@ -26,9 +27,10 @@ export const MAX7219Module = ({
   pcbY = 0,
   schX = 0,
   schY = 0,
+  pcbRotation,
 }: MAX7219ModuleProps) => {
   return (
-    <group name={name} pcbX={pcbX} pcbY={pcbY} schX={schX} schY={schY}>
+    <group name={name} pcbX={pcbX} pcbY={pcbY} schX={schX} schY={schY} pcbRotation={pcbRotation}>
       <pinheader
         name={`${name}_J1`}
         pinCount={5}

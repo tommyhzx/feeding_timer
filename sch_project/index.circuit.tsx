@@ -35,10 +35,11 @@ export default () => (
     {/* ========== MAX7219 显示模块接口 ========== */}
     <MAX7219Module
       name="DISP"
-      pcbX={10}
-      pcbY={-14}
+      pcbX={55}
+      pcbY={0}
       schX={-10}
       schY={5}
+      pcbRotation="90deg"
     />
 
     {/* ========== 网络定义 ========== */}
