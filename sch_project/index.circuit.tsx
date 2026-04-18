@@ -16,17 +16,18 @@ export default () => (
     {/* ========== ESP32-S3-WROOM-1-N16R8 模块 ========== */}
     <ESP32S3WROOM16R8Module
       name="MCU"
-      pcbX={-27}
+      pcbX={0}
       pcbY={0}
       schX={0}
       schY={5}
       pcbRotation="270deg"
+      layer="bottom"
     />
 
     {/* ========== 独立按键模块 ========== */}
     <KeySwitchesModule
       name="KEY"
-      pcbX={30}
+      pcbX={0}
       pcbY={0}
       schX={0}
       schY={0}
@@ -35,7 +36,7 @@ export default () => (
     {/* ========== MAX7219 显示模块接口 ========== */}
     <MAX7219Module
       name="DISP"
-      pcbX={55}
+      pcbX={27}
       pcbY={0}
       schX={-10}
       schY={5}
@@ -70,8 +71,8 @@ export default () => (
     <trace from="MCU_ESP32.GPIO10" to="DISP_J1.pin5" />
 
     {/* ========== 安装孔 (与 case_base.py 圆柱对齐) ========== */}
-    <hole name="MH1" diameter="4mm" pcbX={-53} pcbY={0} />
-    <hole name="MH2" diameter="4mm" pcbX={50} pcbY={-13} />
-    <hole name="MH3" diameter="4mm" pcbX={50} pcbY={13} />
+    <hole name="MH1" diameter="4mm" pcbX={-25} pcbY={0} />
+    <hole name="MH2" diameter="4mm" pcbX={23} pcbY={-8} />
+    <hole name="MH3" diameter="4mm" pcbX={23} pcbY={8} />
   </board>
 );

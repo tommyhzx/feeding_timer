@@ -37,6 +37,8 @@ export const ESP32S3WROOM16R8Module = (props: {
   schX?: number;
   /** 原理图 Y坐标 (默认: 0) */
   schY?: number;
+  /** PCB 层 (默认: "top") */
+  layer?: "top" | "bottom";
 }) => {
   const {
     name = "MCU",
@@ -45,6 +47,7 @@ export const ESP32S3WROOM16R8Module = (props: {
     pcbRotation = "0deg",
     schX = 0,
     schY = 0,
+    layer = "top",
   } = props;
 
   return (
@@ -61,9 +64,10 @@ export const ESP32S3WROOM16R8Module = (props: {
       {/* ========== 组件放置 ========== */}
 
       {/* ESP32-S3-WROOM-1-N16R8 模块 */}
-      <ESP32S3WROOM1N16R8 name={`${name}_ESP32`} 
-      pcbX={0} 
-      pcbY={0} 
+      <ESP32S3WROOM1N16R8 name={`${name}_ESP32`}
+      pcbX={0}
+      pcbY={0}
+      layer={layer}
       />
 
       {/* ========== 内部走线 ========== */}
