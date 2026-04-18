@@ -52,8 +52,8 @@ export default () => (
     <trace from="net.MODE_SIG" to="KEY_MODE.pin1" />
     <trace from="KEY_MODE.pin2" to="net.GND" />
 
-    {/* Enter 按键: MCU.GPIO4 → KEY_ENTER.pin1, KEY_ENTER.pin2 → GND */}
-    <trace from="MCU_ESP32.GPIO4" to="net.ENTER_SIG" />
+    {/* Enter 按键: MCU.GPIO11 → KEY_ENTER.pin1, KEY_ENTER.pin2 → GND (修改：避开 Strapping 引脚 GPIO4) */}
+    <trace from="MCU_ESP32.GPIO11" to="net.ENTER_SIG" />
     <trace from="net.ENTER_SIG" to="KEY_ENTER.pin1" />
     <trace from="KEY_ENTER.pin2" to="net.GND" />
 
@@ -66,8 +66,8 @@ export default () => (
     <trace from="MCU_ESP32.GPIO7" to="DISP_J1.pin3" />
     {/* CS: MCU.GPIO8 → DISP_J1.pin4 */}
     <trace from="MCU_ESP32.GPIO8" to="DISP_J1.pin4" />
-    {/* CLK: MCU.GPIO15 → DISP_J1.pin5 */}
-    <trace from="MCU_ESP32.GPIO15" to="DISP_J1.pin5" />
+    {/* CLK: MCU.GPIO10 → DISP_J1.pin5 (修改：避开 Strapping 引脚 GPIO15) */}
+    <trace from="MCU_ESP32.GPIO10" to="DISP_J1.pin5" />
 
     {/* ========== 安装孔 (与 case_base.py 圆柱对齐) ========== */}
     <hole name="MH1" diameter="4mm" pcbX={-53} pcbY={0} />
