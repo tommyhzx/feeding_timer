@@ -53,10 +53,10 @@ strut_positions = [
 # 计算立柱Y方向偏移：贴着屏幕盒背面（-Y方向的面）
 STRUT_Y_OFFSET = -(SCREEN_BOX_DEPTH / 2 + STRUT_SIZE / 2)
 
-# 计算立柱高度：与屏幕盒Z方向顶面保持一致
+# 计算立柱高度：与屏幕盒Z方向顶面保持一致，然后缩短10mm
 # 屏幕盒Z中心位置（从装配代码获取）
 screen_box_z_center = BASE_THICKNESS/2 + GAP_HEIGHT + SCREEN_BOX_WIDTH/2
-STRUT_HEIGHT = (screen_box_z_center + SCREEN_BOX_WIDTH / 2) - BASE_THICKNESS / 2
+STRUT_HEIGHT = (screen_box_z_center + SCREEN_BOX_WIDTH / 2) - BASE_THICKNESS / 2 - 10.0  # 缩短10mm
 
 # 创建立柱部件列表
 strut_parts = []
@@ -96,7 +96,7 @@ for i, (x, y) in enumerate(strut_positions, 1):
     print(f"  支柱{i} 已在顶面中心开螺丝孔: 深度{top_hole_depth}mm")
 
     # 移动支柱到正确位置
-    # 立柱位于底座中轴线上（Y=0）
+    # 立柱位于底座中轴线上（Y=0），从底座顶面开始
     strut_center_y = 0
     final_pos = Vector(x, strut_center_y, BASE_THICKNESS/2)
     print(f"  支柱{i} 位置: x={x}, y={strut_center_y}, z={BASE_THICKNESS/2}")

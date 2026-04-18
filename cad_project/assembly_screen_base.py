@@ -54,7 +54,8 @@ screen_box = screen_box_original.rotate(Axis.X, -90)
 # 底座顶面在Z=BASE_THICKNESS/2 = 1mm
 # 屏幕盒底面在Z=1+GAP_HEIGHT = 21mm
 # 屏幕盒Z中心在Z=1+GAP_HEIGHT+SCREEN_BOX_WIDTH/2 = 1+20+18 = 39mm
-screen_box_z_center = BASE_THICKNESS/2 + GAP_HEIGHT + SCREEN_BOX_WIDTH/2
+# 向下移动10mm，与立柱缩短10mm保持一致
+screen_box_z_center = BASE_THICKNESS/2 + GAP_HEIGHT + SCREEN_BOX_WIDTH/2 - 10.0
 
 # Y方向：屏幕盒位置计算
 # 屏幕盒绕X轴旋转-90度后：
