@@ -5,6 +5,7 @@
 """
 
 from screen_box import get_screen_box
+from base_strut import get_base_strut, BASE_LENGTH, BASE_WIDTH, BASE_THICKNESS
 from build123d import *
 from ocp_vscode import show
 import sys
@@ -12,11 +13,6 @@ import os
 
 # 添加cad_project目录到路径，以便导入screen_box
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-# ========== 底座参数 ==========
-BASE_LENGTH = 120.0  # mm，X方向
-BASE_WIDTH = 45.0    # mm，Y方向
-BASE_THICKNESS = 2.0  # mm，Z方向
 
 # ========== 屏幕盒参数（从screen_box.py） ==========
 SCREEN_BOX_LENGTH = 79.0  # mm
@@ -26,29 +22,16 @@ SCREEN_BOX_DEPTH = 15.0   # mm
 # ========== 装配参数 ==========
 GAP_HEIGHT = 20.0  # mm，底座顶面到屏幕盒底面的间隙
 
-# ========== 支撑板参数 ==========
-# 注意：屏幕盒旋转-90度后，底板在XY平面的投影尺寸变化：
-#   X方向不变（长度79mm）
-#   Y方向变为原深度（15mm）
-SUPPORT_LENGTH = SCREEN_BOX_LENGTH  # 79mm，X方向
-SUPPORT_WIDTH = SCREEN_BOX_DEPTH    # 15mm，Y方向（旋转后的底板投影）
-SUPPORT_HEIGHT = GAP_HEIGHT         # 20mm，支柱高度
-SUPPORT_THICKNESS = 2.0  # mm，支撑板壁厚
-
-# ========== 立柱固定螺丝孔参数 ==========
-STRUT_MOUNT_HOLE_DIA = 2.5  # mm，M2螺丝通孔
-
 print(f"内部结构装配设计")
 print(f"底座尺寸: {BASE_LENGTH} x {BASE_WIDTH} x {BASE_THICKNESS} mm")
 print(f"屏幕盒尺寸: {SCREEN_BOX_LENGTH} x {SCREEN_BOX_WIDTH} x {SCREEN_BOX_DEPTH} mm")
 print(f"间隙高度: {GAP_HEIGHT} mm")
 
-# ========== 1. 创建底座 ==========
-with BuildPart() as base_builder:
-    Box(BASE_LENGTH, BASE_WIDTH, BASE_THICKNESS)
-base_solid = base_builder.part.solid()
-print(f"已创建底座: {BASE_LENGTH} x {BASE_WIDTH} x {BASE_THICKNESS} mm")
-print(f"  底座Z范围: [{-BASE_THICKNESS/2}, {BASE_THICKNESS/2}] = [-1, 1] mm")
+# ========== 1. 从新模块获取底座和立柱 ==========
+base_strut_model = get_base_strut()
+base_solid = base_strut_model['base']
+support_solid = base_strut_model['strut']
+print(f"已从 base_strut 模块导入底座和立柱")
 
 # ========== 2. 导入并定位屏幕盒 ==========
 # 导入屏幕盒模型
@@ -86,91 +69,7 @@ print(
 print(
     f"  屏幕盒Z范围: [{screen_box_z_center - SCREEN_BOX_DEPTH/2}, {screen_box_z_center + SCREEN_BOX_DEPTH/2}]")
 
-# ========== 3. 创建支撑板 ==========
-# 支撑板：四角支柱设计，节省材料
-# 支柱位于屏幕盒底板的四个角下方
-
-# 计算支柱位置（相对于屏幕盒底板中心）
-# 屏幕盒底板尺寸：79mm x 36mm
-# 支柱位于四角，距离边缘一定距离
-STRUT_OFFSET = 20.0  # mm，支柱距离边缘的距离
-STRUT_SIZE = 8.0    # mm，支柱截面尺寸
-
-# 计算两个支柱的位置（在X方向上）
-strut_x = SUPPORT_LENGTH / 2 - STRUT_OFFSET  # 34.5mm
-
-strut_positions = [
-    (-strut_x, 0),  # 左侧
-    (strut_x, 0),   # 右侧
-]
-
-# 计算立柱Y方向偏移：贴着屏幕盒背面（-Y方向的面）
-# 屏幕盒背面位置：screen_box_y_center - SCREEN_BOX_DEPTH/2
-# 立柱要贴着背面，立柱Y中心应该在背面减去立柱半宽
-STRUT_Y_OFFSET = -(SCREEN_BOX_DEPTH / 2 + STRUT_SIZE / 2)
-
-# 计算立柱高度：与屏幕盒Z方向顶面保持一致
-# 屏幕盒Z顶面 = screen_box_z_center + SCREEN_BOX_WIDTH/2
-# 立柱底面 = BASE_THICKNESS/2
-# 立柱高度 = 屏幕盒Z顶面 - 立柱底面
-STRUT_HEIGHT = (screen_box_z_center + SCREEN_BOX_WIDTH / 2) - BASE_THICKNESS / 2
-
-# 创建支撑板部件列表
-support_parts = []
-
-for i, (x, y) in enumerate(strut_positions, 1):
-    # 创建支柱（从底座顶面到屏幕盒顶面）- 方形立柱
-    with BuildPart() as strut_builder:
-        Box(STRUT_SIZE, STRUT_SIZE, STRUT_HEIGHT,
-            align=(Align.CENTER, Align.CENTER, Align.MIN))
-    strut = strut_builder.part.solid()
-
-    # 在立柱+Y侧表面开螺丝孔
-    # 计算孔深：需要穿透8mm立柱宽度
-    hole_depth = STRUT_SIZE + 2  # 10mm，确保穿透
-    with BuildPart() as hole_builder:
-        Cylinder(STRUT_MOUNT_HOLE_DIA / 2, hole_depth,
-                 align=(Align.CENTER, Align.CENTER, Align.MIN))
-    # 旋转圆柱使其沿Y轴（默认是沿Z轴）
-    hole = hole_builder.part.solid().rotate(Axis.X, 90)
-
-    # 计算孔的位置（相对于立柱中心）
-    # 立柱中心Y坐标
-    strut_center_y = y + screen_box_y_center + STRUT_Y_OFFSET
-
-    # 孔的Y位置：从立柱+Y表面向内开
-    # 使用align=(Align.CENTER, Align.CENTER, Align.MIN)后，圆柱Y范围是[0, depth]
-    # 圆柱中心在depth/2，需要调整以与屏幕盒孔对齐
-    hole_y_local = hole_depth / 2 + 0.5  # 5.5mm
-    hole_y = hole_y_local
-
-    # 孔的Z位置：立柱高度减去SCREEN_BOX_WIDTH的一半
-    # 这样可以与屏幕盒上的孔对齐
-    hole_z_local = STRUT_HEIGHT - SCREEN_BOX_WIDTH / 2
-    hole_z = hole_z_local
-
-    # 定位孔（相对立柱中心）
-    hole = hole.translate(Vector(0, hole_y, hole_z))
-
-    # 在立柱上开孔
-    strut = strut - hole
-    print(f"  支柱{i} 已在+Y侧开螺丝孔: 相对Y={hole_y_local}mm, 相对Z={hole_z_local}mm")
-
-    # 移动支柱到正确位置
-    # align=(CENTER, CENTER, MIN)后，支柱Z范围是[0, SUPPORT_HEIGHT]
-    # 需要移动到：XY平面对应位置，Z从底座顶面(BASE_THICKNESS/2=1)开始
-    final_pos = Vector(x, strut_center_y, BASE_THICKNESS/2)
-    print(
-        f"  支柱{i} 位置: x={x}, y={strut_center_y}, z={BASE_THICKNESS/2}")
-    strut = strut.translate(final_pos)
-    support_parts.append(strut)
-
-# 合并所有支柱 - 使用 Compound 保持独立
-support_solid = Compound(support_parts)
-
-print(f"已创建支撑板: 2个方形立柱，边长{STRUT_SIZE}mm，高度{STRUT_HEIGHT} mm")
-
-# ========== 4. 创建装配体 ==========
+# ========== 3. 创建装配体 ==========
 # 将所有部件组合成一个装配体（保持为独立部件，便于分别打印）
 # 使用compound对象包含所有部件
 assembly_parts = [base_solid, support_solid, screen_box]
