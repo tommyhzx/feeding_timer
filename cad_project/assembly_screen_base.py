@@ -5,7 +5,8 @@
 """
 
 from screen_box import get_screen_box
-from base_strut import get_base_strut, BASE_LENGTH, BASE_WIDTH, BASE_THICKNESS
+from base_strut import get_base_strut, BASE_LENGTH, BASE_WIDTH, BASE_THICKNESS, STRUT_SIZE
+from pcb_box import get_pcb_box
 from build123d import *
 from ocp_vscode import show
 import sys
@@ -22,6 +23,11 @@ SCREEN_BOX_DEPTH = 15.0   # mm
 # ========== 装配参数 ==========
 GAP_HEIGHT = 20.0  # mm，底座顶面到屏幕盒底面的间隙
 
+# ========== PCB盒子参数 ==========
+PCB_BOX_LENGTH = 119.0  # mm，X方向
+PCB_BOX_WIDTH = 36.0    # mm，Y方向（旋转后，原来的Z）
+PCB_BOX_DEPTH = 10.0    # mm，Z方向（旋转后，原来的Y，开口方向）
+
 print(f"内部结构装配设计")
 print(f"底座尺寸: {BASE_LENGTH} x {BASE_WIDTH} x {BASE_THICKNESS} mm")
 print(f"屏幕盒尺寸: {SCREEN_BOX_LENGTH} x {SCREEN_BOX_WIDTH} x {SCREEN_BOX_DEPTH} mm")
@@ -31,6 +37,7 @@ print(f"间隙高度: {GAP_HEIGHT} mm")
 base_strut_model = get_base_strut()
 base_solid = base_strut_model['base']
 support_solid = base_strut_model['strut']
+STRUT_HEIGHT = base_strut_model['strut_height']
 print(f"已从 base_strut 模块导入底座和立柱")
 
 # ========== 2. 导入并定位屏幕盒 ==========
@@ -54,9 +61,8 @@ screen_box_z_center = BASE_THICKNESS/2 + GAP_HEIGHT + SCREEN_BOX_WIDTH/2
 #   - 原Z方向→Y方向，原Y方向→Z方向
 #   - Y方向尺寸变为DEPTH(15mm)，Z方向尺寸变为WIDTH(36mm)
 #   - 开口朝+Y方向，底板在-Y方向
-# 底座+Y边缘在Y=BASE_WIDTH/2 = 22.5mm
-# 屏幕盒Y中心计算公式
-screen_box_y_center = BASE_WIDTH / 2 - SCREEN_BOX_DEPTH / 2
+# 屏幕盒底板贴着立柱+Y面（立柱在Y=0，尺寸8mm，+Y面在Y=4mm）
+screen_box_y_center = STRUT_SIZE / 2 + SCREEN_BOX_DEPTH / 2
 screen_box = screen_box.translate(
     Vector(0, screen_box_y_center, screen_box_z_center))
 
@@ -69,10 +75,41 @@ print(
 print(
     f"  屏幕盒Z范围: [{screen_box_z_center - SCREEN_BOX_DEPTH/2}, {screen_box_z_center + SCREEN_BOX_DEPTH/2}]")
 
-# ========== 3. 创建装配体 ==========
+# ========== 3. 导入并定位PCB盒子 ==========
+# 导入PCB盒子模型
+pcb_box_original = get_pcb_box()
+
+# 旋转PCB盒子：绕X轴旋转90度，使开口面朝+Z方向
+# 原始方向：开口朝+Y方向，尺寸119mm(X) × 36mm(Z) × 10mm(Y)
+# 旋转后：长(119mm)沿X方向，宽(36mm)沿Y方向，深(10mm)沿Z方向
+pcb_box = pcb_box_original.rotate(Axis.X, 90)
+
+# 计算PCB盒子Z方向位置
+# 立柱顶面在Z = BASE_THICKNESS/2 + STRUT_HEIGHT = 1 + 56 = 57mm
+# PCB盒子深度10mm（旋转后的Z方向）
+# PCB盒子Z中心 = 57 + 10/2 = 62mm，底面与立柱顶面对齐
+strut_top_z = BASE_THICKNESS/2 + STRUT_HEIGHT
+pcb_box_z_center = strut_top_z + PCB_BOX_DEPTH / 2
+
+# X方向：与立柱中轴线对齐（X=0）
+pcb_box_x_center = 0
+
+# Y方向：与底座中心对齐（Y=0）
+pcb_box_y_center = 0
+
+pcb_box = pcb_box.translate(Vector(pcb_box_x_center, pcb_box_y_center, pcb_box_z_center))
+
+print(f"已导入并定位PCB盒子")
+print(f"  旋转: 绕X轴90度，开口面朝+Z方向")
+print(f"  位置: X中心={pcb_box_x_center} mm（与立柱中轴线对齐）")
+print(f"  位置: Y中心={pcb_box_y_center} mm（与底座中心对齐）")
+print(f"  位置: Z中心={pcb_box_z_center} mm（立柱顶面+{PCB_BOX_DEPTH/2}mm）")
+print(f"  PCB盒子Z范围: [{pcb_box_z_center - PCB_BOX_DEPTH/2}, {pcb_box_z_center + PCB_BOX_DEPTH/2}]")
+
+# ========== 4. 创建装配体 ==========
 # 将所有部件组合成一个装配体（保持为独立部件，便于分别打印）
 # 使用compound对象包含所有部件
-assembly_parts = [base_solid, support_solid, screen_box]
+assembly_parts = [base_solid, support_solid, screen_box, pcb_box]
 
 print(f"\n装配完成！")
 print(f"包含 {len(assembly_parts)} 个部件:")
@@ -80,12 +117,15 @@ print(f"  1. 底座: {BASE_LENGTH} x {BASE_WIDTH} x {BASE_THICKNESS} mm")
 print(f"  2. 支撑板: 2个方形立柱（X方向）")
 print(
     f"  3. 屏幕盒: {SCREEN_BOX_LENGTH} x {SCREEN_BOX_WIDTH} x {SCREEN_BOX_DEPTH} mm")
+print(
+    f"  4. PCB盒子: {PCB_BOX_LENGTH} x {PCB_BOX_WIDTH} x {PCB_BOX_DEPTH} mm")
 
 # ========== 导出模型供其他模块使用 ==========
 assembly_model = {
     'base': base_solid,
     'support': support_solid,
     'screen_box': screen_box,
+    'pcb_box': pcb_box,
     'all': assembly_parts
 }
 
@@ -108,6 +148,11 @@ def get_support():
 def get_screen_box():
     """返回定位后的屏幕盒模型"""
     return screen_box
+
+
+def get_pcb_box():
+    """返回定位后的PCB盒子模型"""
+    return pcb_box
 
 
 if __name__ == "__main__":

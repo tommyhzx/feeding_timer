@@ -96,9 +96,8 @@ for i, (x, y) in enumerate(strut_positions, 1):
     print(f"  支柱{i} 已在顶面中心开螺丝孔: 深度{top_hole_depth}mm")
 
     # 移动支柱到正确位置
-    # 计算屏幕盒Y中心位置
-    screen_box_y_center = BASE_WIDTH / 2 - SCREEN_BOX_DEPTH / 2
-    strut_center_y = y + screen_box_y_center + STRUT_Y_OFFSET
+    # 立柱位于底座中轴线上（Y=0）
+    strut_center_y = 0
     final_pos = Vector(x, strut_center_y, BASE_THICKNESS/2)
     print(f"  支柱{i} 位置: x={x}, y={strut_center_y}, z={BASE_THICKNESS/2}")
     strut = strut.translate(final_pos)
@@ -114,11 +113,12 @@ def get_base_strut():
     """返回底座和立柱的字典
 
     Returns:
-        dict: 包含 'base' (底座) 和 'strut' (立柱) 的字典
+        dict: 包含 'base' (底座), 'strut' (立柱), 'strut_height' (立柱高度) 的字典
     """
     return {
         'base': base_solid,
-        'strut': support_solid
+        'strut': support_solid,
+        'strut_height': STRUT_HEIGHT
     }
 
 
