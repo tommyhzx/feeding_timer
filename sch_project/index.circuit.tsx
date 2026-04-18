@@ -71,7 +71,7 @@ export default () => (
 
     {/* ========== 安装孔 (与 case_base.py 圆柱对齐) ========== */}
     <hole name="MH1" diameter="4mm" pcbX={-53} pcbY={0} />
-    <hole name="MH2" diameter="4mm" pcbX={53} pcbY={-13} />
-    <hole name="MH3" diameter="4mm" pcbX={53} pcbY={13} />
+    <hole name="MH2" diameter="4mm" pcbX={50} pcbY={-13} />
+    <hole name="MH3" diameter="4mm" pcbX={50} pcbY={13} />
   </board>
 );

@@ -16,7 +16,8 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "types": [
-      "tscircuit"
+      "tscircuit",
+      "node"
     ]
   },
   "include": [
