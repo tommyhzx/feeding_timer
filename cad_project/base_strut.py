@@ -10,6 +10,7 @@ from ocp_vscode import show
 BASE_LENGTH = 120.0  # mm，X方向
 BASE_WIDTH = 45.0    # mm，Y方向
 BASE_THICKNESS = 2.0  # mm，Z方向
+BASE_FILLET_RADIUS = 5.0  # mm，XY平面边缘圆角半径
 
 # ========== 屏幕盒相关参数 ==========
 SCREEN_BOX_LENGTH = 79.0  # mm
@@ -33,8 +34,13 @@ print(f"间隙高度: {GAP_HEIGHT} mm")
 # ========== 1. 创建底座 ==========
 with BuildPart() as base_builder:
     Box(BASE_LENGTH, BASE_WIDTH, BASE_THICKNESS)
+    # 获取底座的所有竖直边缘（XY平面上的边缘）
+    edges = base_builder.part.edges().filter_by(Axis.Z)
+    # 对竖直边缘进行圆角处理
+    fillet(edges, BASE_FILLET_RADIUS)
 base_solid = base_builder.part.solid()
 print(f"已创建底座: {BASE_LENGTH} x {BASE_WIDTH} x {BASE_THICKNESS} mm")
+print(f"  底座边缘圆角: {BASE_FILLET_RADIUS} mm")
 print(f"  底座Z范围: [{-BASE_THICKNESS/2}, {BASE_THICKNESS/2}] = [-1, 1] mm")
 
 # ========== 2. 创建立柱 ==========

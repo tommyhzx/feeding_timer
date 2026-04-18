@@ -11,9 +11,10 @@ from ocp_vscode import show
 # ========== 罩壳参数 ==========
 COVER_LENGTH = 120.0  # mm，长度（X方向），与底座一致
 COVER_WIDTH = 45.0    # mm，宽度（Y方向），与底座一致
-COVER_HEIGHT = 80.0   # mm，高度（Z方向）
+COVER_HEIGHT = 60.0   # mm，高度（Z方向）
 WALL_THICKNESS = 2.0  # mm，壁厚
-FILLET_RADIUS = 2.0   # mm，外框圆角半径
+FILLET_RADIUS = 2.0   # mm，顶部边缘圆角半径
+VERTICAL_FILLET_RADIUS = 5.0   # mm，竖直边缘圆角半径
 
 # ========== 正面开口参数 ==========
 FRONT_OPENING_LENGTH = 75.0   # mm，开口长度（X方向）
@@ -80,7 +81,7 @@ opening_back_y = inner_width / 2  # 20.5mm
 opening_y = opening_back_y + opening_depth / 2
 
 # Z方向：居中于罩壳，略向上偏移以更好显示
-opening_z = 5  # 向上偏移5mm，使开口中心位于 Z=5mm
+opening_z = 0  # 向上偏移5mm，使开口中心位于 Z=5mm
 
 opening_box = opening_box.translate(Vector(opening_x, opening_y, opening_z))
 
@@ -119,35 +120,69 @@ cover = cover - key_box
 print(f"已在顶面开按键孔: {KEY_SIZE} x {KEY_SIZE} mm")
 print(f"  开口位置: X={key_x}mm, Y居中, Z={key_z:.1f}mm")
 
-# ========== 4. 外角边缘导角 ==========
+# ========== 4. 竖直边缘导角（沿着Z方向） ==========
+# 只对外角的4条竖直边缘进行圆角处理
+vertical_edges = []
+for e in cover.edges():
+    # 判断边缘是否是竖直的（沿着Z轴方向）
+    edge_dir = (e.end_point() - e.start_point()).normalized()
+    if abs(edge_dir.Z) > 0.9:  # Z分量接近1，说明是竖直边缘
+        # 使用边缘中点来判断位置
+        pos = e.position_at(0.5)
+        # 外角竖直边缘的特征：X和Y坐标都应该非常接近外表面的极限值
+        # 检查是否接近X方向的外表面
+        is_at_x_edge = abs(pos.X) > (COVER_LENGTH - WALL_THICKNESS) / 2 - 1
+        # 检查是否接近Y方向的外表面
+        is_at_y_edge = abs(pos.Y) > (COVER_WIDTH - WALL_THICKNESS) / 2 - 1
+        # 同时满足才是外角竖直边缘
+        if is_at_x_edge and is_at_y_edge:
+            vertical_edges.append(e)
+
+print(f"外角竖直边缘数量: {len(vertical_edges)}")
+if vertical_edges:
+    try:
+        cover = cover.fillet(VERTICAL_FILLET_RADIUS, vertical_edges)
+        print(f"外角竖直边缘倒角完成: {len(vertical_edges)} 条")
+    except Exception as e:
+        print(f"外角竖直边缘倒角失败: {e}")
+
+# ========== 5. 顶部边缘导角 ==========
 all_edges = cover.edges()
 
-# 选择需要倒角的边缘：仅选择顶部的四个垂直外角边缘
+# 选择需要倒角的边缘：仅选择顶部的四个外角边缘
 fillet_edges = []
-for e in all_edges:
-    pos = e.position_at(0)
-    # 顶部的四个垂直外角边缘
-    if (abs(pos.Z - COVER_HEIGHT / 2) < 1 and  # 顶部边缘
-        abs(pos.X) > COVER_LENGTH / 2 - 2 and   # 靠近X方向边缘
-        abs(pos.Y) > COVER_WIDTH / 2 - 2):      # 靠近Y方向边缘
-        fillet_edges.append(e)
+for e in cover.edges():
+    # 获取边缘上多个点来检查
+    is_top_edge = True
+    for t in [0, 0.5, 1.0]:
+        pos = e.position_at(t)
+        # 检查Z坐标是否在顶部
+        if abs(pos.Z - COVER_HEIGHT / 2) > 1:
+            is_top_edge = False
+            break
+    if is_top_edge:
+        # 检查X和Y是否靠近外边缘（四个角）
+        pos = e.position_at(0.5)
+        if (abs(pos.X) > COVER_LENGTH / 2 - 5 and   # 靠近X方向边缘
+            abs(pos.Y) > COVER_WIDTH / 2 - 5):      # 靠近Y方向边缘
+            fillet_edges.append(e)
 
-print(f"外角边缘数量: {len(fillet_edges)}")
+print(f"顶部外角边缘数量: {len(fillet_edges)}")
 if fillet_edges:
     try:
         # 使用较小的倒角半径尝试
         cover = cover.fillet(FILLET_RADIUS, fillet_edges)
-        print(f"外角边缘倒角完成: {len(fillet_edges)} 条")
+        print(f"顶部边缘倒角完成: {len(fillet_edges)} 条")
     except Exception as e:
-        print(f"外角边缘倒角失败（尝试较小半径）: {e}")
+        print(f"顶部边缘倒角失败（尝试较小半径）: {e}")
         # 尝试使用更小的倒角半径
         try:
             cover = cover.fillet(FILLET_RADIUS / 2, fillet_edges)
-            print(f"外角边缘倒角完成（半径={FILLET_RADIUS/2}mm）: {len(fillet_edges)} 条")
+            print(f"顶部边缘倒角完成（半径={FILLET_RADIUS/2}mm）: {len(fillet_edges)} 条")
         except Exception as e2:
-            print(f"外角边缘倒角最终失败: {e2}")
+            print(f"顶部边缘倒角最终失败: {e2}")
 
-# ========== 5. 正面开口边缘导角（可选） ==========
+# ========== 6. 正面开口边缘导角（可选） ==========
 # 正面开口的边缘倒角比较复杂，暂时跳过
 # 如果需要更平滑的边缘，可以后续手动处理
 
