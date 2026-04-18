@@ -12,6 +12,12 @@ BASE_WIDTH = 45.0    # mm，Y方向
 BASE_THICKNESS = 2.0  # mm，Z方向
 BASE_FILLET_RADIUS = 5.0  # mm，XY平面边缘圆角半径
 
+# ========== 止口参数 ==========
+RIM_OFFSET = 2.0      # mm，止口距离边缘的偏移量
+RIM_THICKNESS = 2.0   # mm，止口壁厚
+RIM_HEIGHT = 2.0      # mm，止口高度
+RIM_TOLERANCE = 0.2   # mm，与外壳内壁配合的公差（单边）
+
 # ========== 屏幕盒相关参数 ==========
 SCREEN_BOX_LENGTH = 79.0  # mm
 SCREEN_BOX_WIDTH = 36.0   # mm
@@ -43,6 +49,39 @@ print(f"已创建底座: {BASE_LENGTH} x {BASE_WIDTH} x {BASE_THICKNESS} mm")
 print(f"  底座边缘圆角: {BASE_FILLET_RADIUS} mm")
 print(f"  底座Z范围: [{-BASE_THICKNESS/2}, {BASE_THICKNESS/2}] = [-1, 1] mm")
 
+# ========== 1.5 创建止口 ==========
+# 止口外轮廓尺寸（考虑公差，双边各减去公差）
+rim_outer_length = BASE_LENGTH - 2 * RIM_OFFSET - 2 * RIM_TOLERANCE
+rim_outer_width = BASE_WIDTH - 2 * RIM_OFFSET - 2 * RIM_TOLERANCE
+# 止口内轮廓尺寸
+rim_inner_length = rim_outer_length - 2 * RIM_THICKNESS
+rim_inner_width = rim_outer_width - 2 * RIM_THICKNESS
+
+# 创建止口（环状结构）
+with BuildPart() as rim_builder:
+    # 创建外轮廓Box
+    Box(rim_outer_length, rim_outer_width, RIM_HEIGHT,
+        align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # 从中减去内轮廓Box，形成环状
+    Box(rim_inner_length, rim_inner_width, RIM_HEIGHT,
+        align=(Align.CENTER, Align.CENTER, Align.MIN),
+        mode=Mode.SUBTRACT)
+    # 对止口的所有竖直边缘进行圆角处理
+    rim_edges = rim_builder.part.edges().filter_by(Axis.Z)
+    fillet(rim_edges, BASE_FILLET_RADIUS)
+rim_solid = rim_builder.part.solid()
+
+# 将止口放置在底座顶面上
+# 底座顶面Z坐标为 BASE_THICKNESS/2，止口从该位置开始向上延伸
+rim_solid = rim_solid.translate(Vector(0, 0, BASE_THICKNESS / 2))
+
+# 将止口与底座合并
+base_solid = base_solid + rim_solid
+
+print(f"已创建止口: 外{rim_outer_length} x {rim_outer_width} mm, "
+      f"内{rim_inner_length} x {rim_inner_width} mm, 高{RIM_HEIGHT} mm")
+print(f"  止口偏移: 距边缘{RIM_OFFSET}mm, 壁厚{RIM_THICKNESS}mm, 配合公差{RIM_TOLERANCE}mm")
+
 # ========== 2. 创建立柱 ==========
 # 计算支撑板尺寸
 SUPPORT_LENGTH = SCREEN_BOX_LENGTH  # 79mm，X方向
@@ -62,7 +101,8 @@ STRUT_Y_OFFSET = -(SCREEN_BOX_DEPTH / 2 + STRUT_SIZE / 2)
 # 计算立柱高度：与屏幕盒Z方向顶面保持一致，然后缩短10mm
 # 屏幕盒Z中心位置（从装配代码获取）
 screen_box_z_center = BASE_THICKNESS/2 + GAP_HEIGHT + SCREEN_BOX_WIDTH/2
-STRUT_HEIGHT = (screen_box_z_center + SCREEN_BOX_WIDTH / 2) - BASE_THICKNESS / 2 - 10.0  # 缩短10mm
+STRUT_HEIGHT = (screen_box_z_center + SCREEN_BOX_WIDTH / 2) - \
+    BASE_THICKNESS / 2 - 10.0  # 缩短10mm
 
 # 创建立柱部件列表
 strut_parts = []

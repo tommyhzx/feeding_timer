@@ -4,7 +4,7 @@
 屏幕盒面朝Y方向，放置在底座上方10mm处
 """
 
-from screen_box import get_screen_box
+from screen_box import get_screen_box, SCREEN_BOX_LENGTH, SCREEN_BOX_WIDTH, SCREEN_BOX_DEPTH
 from base_strut import get_base_strut, BASE_LENGTH, BASE_WIDTH, BASE_THICKNESS, STRUT_SIZE
 from pcb_box import get_pcb_box
 from base_cover import get_base_cover
@@ -15,11 +15,6 @@ import os
 
 # 添加cad_project目录到路径，以便导入screen_box
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-# ========== 屏幕盒参数（从screen_box.py） ==========
-SCREEN_BOX_LENGTH = 79.0  # mm
-SCREEN_BOX_WIDTH = 36.0   # mm
-SCREEN_BOX_DEPTH = 15.0   # mm
 
 # ========== 装配参数 ==========
 GAP_HEIGHT = 20.0  # mm，底座顶面到屏幕盒底面的间隙

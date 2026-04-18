@@ -121,8 +121,10 @@ print(f"已在顶面开按键孔: {KEY_SIZE} x {KEY_SIZE} mm")
 print(f"  开口位置: X={key_x}mm, Y居中, Z={key_z:.1f}mm")
 
 # ========== 4. 竖直边缘导角（沿着Z方向） ==========
-# 只对外角的4条竖直边缘进行圆角处理
-vertical_edges = []
+# 对外角和内角的竖直边缘分别进行圆角处理
+vertical_edges = []  # 外角竖直边缘
+inner_vertical_edges = []  # 内角竖直边缘
+
 for e in cover.edges():
     # 判断边缘是否是竖直的（沿着Z轴方向）
     edge_dir = (e.end_point() - e.start_point()).normalized()
@@ -138,13 +140,34 @@ for e in cover.edges():
         if is_at_x_edge and is_at_y_edge:
             vertical_edges.append(e)
 
+        # 内角竖直边缘的特征：X和Y坐标接近内表面的极限值
+        # 内表面位置 = 内腔尺寸的一半
+        inner_x_limit = inner_length / 2 - 1
+        inner_y_limit = inner_width / 2 - 1
+        is_at_inner_x_edge = abs(pos.X) > inner_x_limit
+        is_at_inner_y_edge = abs(pos.Y) > inner_y_limit
+        # 同时满足才是内角竖直边缘
+        if is_at_inner_x_edge and is_at_inner_y_edge:
+            inner_vertical_edges.append(e)
+
 print(f"外角竖直边缘数量: {len(vertical_edges)}")
+print(f"内角竖直边缘数量: {len(inner_vertical_edges)}")
+
+# 先处理外角竖直边缘
 if vertical_edges:
     try:
         cover = cover.fillet(VERTICAL_FILLET_RADIUS, vertical_edges)
         print(f"外角竖直边缘倒角完成: {len(vertical_edges)} 条")
     except Exception as e:
         print(f"外角竖直边缘倒角失败: {e}")
+
+# 再处理内角竖直边缘
+if inner_vertical_edges:
+    try:
+        cover = cover.fillet(VERTICAL_FILLET_RADIUS, inner_vertical_edges)
+        print(f"内角竖直边缘倒角完成: {len(inner_vertical_edges)} 条")
+    except Exception as e:
+        print(f"内角竖直边缘倒角失败: {e}")
 
 # ========== 5. 顶部边缘导角 ==========
 all_edges = cover.edges()

@@ -10,7 +10,7 @@ from elements.mounting_holes import create_stepped_cylinder
 
 # ========== 屏幕参数 ==========
 SCREEN_LENGTH = 75.0    # mm，屏幕长度
-SCREEN_WIDTH = 32.0     # mm，屏幕宽度
+SCREEN_WIDTH = 33.0     # mm，屏幕宽度
 
 # ========== 盒子参数 ==========
 BOX_DEPTH = 15.0        # mm，盒子深度（Z方向）
@@ -191,6 +191,11 @@ print(f"盒子模型: {screen_box}")
 
 # ========== 导出模型供其他模块使用 ==========
 screen_box_model = screen_box
+
+# 导出参数别名供其他模块使用
+SCREEN_BOX_LENGTH = OUTER_LENGTH  # 79.0 mm
+SCREEN_BOX_WIDTH = OUTER_WIDTH    # 36.0 mm
+SCREEN_BOX_DEPTH = BOX_DEPTH      # 15.0 mm
 
 
 def get_screen_box():
