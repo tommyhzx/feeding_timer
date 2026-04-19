@@ -7,14 +7,14 @@ Y方向深度10mm，PCB从Y方向插入
 
 from build123d import *
 from ocp_vscode import show
-from elements.mounting_holes import create_stepped_cylinder
+from elements.mounting_holes import create_stepped_cylinder, create_usb_hole_cutout
 
 # ========== PCB参数 ==========
-PCB_LENGTH = 115.0   # mm，PCB长度（X方向）
+PCB_LENGTH = 59.0    # mm，PCB长度（X方向）
 PCB_WIDTH = 32.0     # mm，PCB宽度（Z方向）
 
 # ========== 盒子参数 ==========
-BOX_DEPTH = 10.0     # mm，盒子深度（Y方向）
+BOX_DEPTH = 20.0     # mm，盒子深度（Y方向）
 WALL_THICKNESS = 2.0  # mm，壁厚
 BOTTOM_THICKNESS = 2.0  # mm，底板厚度
 
@@ -28,21 +28,16 @@ INNER_WIDTH = PCB_WIDTH    # 32mm
 INNER_DEPTH = BOX_DEPTH - BOTTOM_THICKNESS  # 8mm
 
 # ========== 台阶型固定柱参数 ==========
-STEP1_DIAMETER = 4.0    # 底层直径
-STEP1_HEIGHT = 2.0      # 底层高度
+STEP1_DIAMETER = 5.0    # 底层直径
+STEP1_HEIGHT = 10.0      # 底层高度
 STEP2_DIAMETER = 2.8    # 上层直径
-STEP2_HEIGHT = 2.0      # 上层高度
+STEP2_HEIGHT = 7.0      # 上层高度
 PCB_HOLE_OFFSET = 3.0   # mm，孔距槽边缘距离
 
 # ========== 底板开孔参数 ==========
 BOTTOM_HOLE_LENGTH = 15.0  # mm，Z方向长度
 BOTTOM_HOLE_WIDTH = 5.0    # mm，X方向宽度
 BOTTOM_HOLE_DEPTH = BOTTOM_THICKNESS + 0.5  # 2.5mm，穿透底板
-
-# ========== 左侧底板开孔参数（-X方向）==========
-BOTTOM_HOLE_LEFT_LENGTH = 10.0  # mm，Z方向长度
-BOTTOM_HOLE_LEFT_WIDTH = 5.0    # mm，X方向宽度
-BOTTOM_HOLE_LEFT_DEPTH = BOTTOM_THICKNESS + 0.5  # 2.5mm，穿透底板
 
 # ========== 导角参数 ==========
 FILLET_RADIUS = 2.0  # mm，外框圆角半径
@@ -84,27 +79,21 @@ pcb_box = outer_solid - inner_box
 print(f"已创建内腔并掏空")
 
 # ========== 3. 添加台阶型固定柱 ==========
-# 计算固定柱位置（相对于内腔中心，在XZ平面上）
-hole_x = INNER_LENGTH / 2 - PCB_HOLE_OFFSET  # 55.5mm
-hole_z = INNER_WIDTH / 2 - PCB_HOLE_OFFSET   # 13mm
-
 # 固定柱的Y位置：在底板内表面
-cavity_inner_y = -BOX_DEPTH / 2 + BOTTOM_THICKNESS
+# cavity_inner_y = -BOX_DEPTH / 2 + BOTTOM_THICKNESS
 
-# 四个固定柱位置（在XZ平面上）
+# 3个固定柱位置（在XZ平面上，与PCB孔位对应）
 cylinder_positions = [
-    (-hole_x, -hole_z),  # 左下（XZ平面）
-    (hole_x, -hole_z),   # 右下
-    (-hole_x, hole_z),   # 左上
-    (hole_x, hole_z),    # 右上
+    (-25, 0),   # MH1
+    (23, -8),   # MH2
+    (23, 8),    # MH3
 ]
 
 for i, (x, z) in enumerate(cylinder_positions, 1):
-    # 创建台阶圆柱（在XY平面）
-    # x对应X方向，z对应Y方向（暂时），z_offset对应Y方向偏移
+    # 创建台阶圆柱（在XY平面，从Z=0开始向上生长）
     stepped_cylinder = create_stepped_cylinder(
         x, z,  # 使用x和z作为位置
-        z_offset=cavity_inner_y,
+        z_offset=0,  # 不偏移，从Z=0开始
         step1_dia=STEP1_DIAMETER,
         step1_height=STEP1_HEIGHT,
         step2_dia=STEP2_DIAMETER,
@@ -112,8 +101,21 @@ for i, (x, z) in enumerate(cylinder_positions, 1):
     )
 
     # 需要将圆柱从XY平面旋转到XZ平面
-    # 绕X轴旋转-90度
+    # 绕X轴旋转-90度（绕原点旋转）
     stepped_cylinder = stepped_cylinder.rotate(Axis.X, -90)
+
+    # 旋转后圆柱在Y方向从0到cylinder_height，需要平移到盒子底部
+    # 圆柱总高度
+    cylinder_height = STEP1_HEIGHT + STEP2_HEIGHT
+    # 计算平移量：圆柱中心(0) -> 圆柱底部与盒子底部对齐
+    # 圆柱默认居中，范围是[-cylinder_height/2, cylinder_height/2]
+    # 要让底部与盒子底部(-BOX_DEPTH/2)对齐，需要平移：
+    # box_bottom_y = -BOX_DEPTH/2 + cylinder_height/2
+    box_bottom_y = -1
+    # 平移
+    stepped_cylinder = stepped_cylinder.translate(Vector(0, box_bottom_y, 0))
+    print(
+        f"    圆柱高度={cylinder_height}mm, Y范围=[{-BOX_DEPTH/2}, {-BOX_DEPTH/2 + cylinder_height}]mm")
 
     # 将固定柱合并到外壳上
     result = pcb_box.fuse(stepped_cylinder)
@@ -130,70 +132,72 @@ for i, (x, z) in enumerate(cylinder_positions, 1):
 
     print(f"已添加第 {i} 个台阶型固定柱: 位置({x}, {z})")
 
-print(f"已添加4个PCB固定台阶圆柱")
+print(f"已添加3个PCB固定台阶圆柱")
 
-# ========== 4. 底板开孔 ==========
+# ========== 4. 右侧壁开孔（+X方向）==========
 # 创建孔切割体
-# 孔尺寸：15mm (Z) x 5mm (X)
-with BuildPart() as bottom_hole_builder:
-    Box(BOTTOM_HOLE_WIDTH, BOTTOM_HOLE_DEPTH, BOTTOM_HOLE_LENGTH)
-bottom_hole = bottom_hole_builder.part.solid()
+# 孔尺寸：15mm (Z) x 5mm (Y)，穿透右侧壁
+with BuildPart() as side_hole_builder:
+    Box(WALL_THICKNESS + 0.5, BOTTOM_HOLE_WIDTH, BOTTOM_HOLE_LENGTH)
+side_hole = side_hole_builder.part.solid()
 
 # 计算孔的位置
-# X方向：靠右侧，距离槽内表面一定距离
-# PCB槽内表面在 X = INNER_LENGTH/2 = 57.5mm
-hole_x_center = INNER_LENGTH / 2 - BOTTOM_HOLE_WIDTH / 2  # 55mm
+# X方向：从右侧外表面向内穿透
+# 右侧外表面在 X = OUTER_LENGTH/2 = 31.5mm
+side_x_start = OUTER_LENGTH / 2  # 31.5mm
 
-# Y方向：从底板内表面向下穿透
-# 底板内表面在 Y = -BOX_DEPTH/2 + BOTTOM_THICKNESS = -5 + 2 = -3mm
-hole_y_start = -BOX_DEPTH / 2 + BOTTOM_THICKNESS  # -3mm
-hole_y_offset = hole_y_start - BOTTOM_HOLE_DEPTH / 2
+# Y方向：居中于盒子深度
+side_y_center = 0
 
 # Z方向：居中于PCB槽
-hole_z_center = 0
+side_z_center = 0
 
-bottom_hole = bottom_hole.translate(
-    Vector(hole_x_center, hole_y_offset, hole_z_center))
+# Box默认中心在原点，X方向范围是[-(WALL_THICKNESS+0.5)/2, (WALL_THICKNESS+0.5)/2]
+# 需要平移，使孔从X=OUTER_LENGTH/2开始向内穿透
+side_hole = side_hole.translate(
+    Vector(side_x_start - (WALL_THICKNESS + 0.5) / 2, side_y_center, side_z_center))
 
 # 在盒子上开孔
-pcb_box = pcb_box - bottom_hole
-print(f"已在底板开孔: {BOTTOM_HOLE_WIDTH} x {BOTTOM_HOLE_LENGTH} mm")
-print(f"  孔位置: X中心={hole_x_center}mm, Y起点={hole_y_start}mm, Z居中")
+pcb_box = pcb_box - side_hole
+print(f"已在右侧壁开孔: {BOTTOM_HOLE_WIDTH} x {BOTTOM_HOLE_LENGTH} mm")
+print(f"  孔位置: X起点={side_x_start}mm, Y居中, Z居中")
 
-# ========== 4.2 左侧底板开孔（-X方向）==========
-# 创建左侧孔切割体
-# 孔尺寸：10mm (Z) x 5mm (X)
-with BuildPart() as bottom_hole_left_builder:
-    Box(BOTTOM_HOLE_LEFT_WIDTH, BOTTOM_HOLE_LEFT_DEPTH, BOTTOM_HOLE_LEFT_LENGTH)
-bottom_hole_left = bottom_hole_left_builder.part.solid()
+# ========== 4.1 左侧壁USB槽（-X方向）==========
+# USB-C开孔尺寸
+USB_HOLE_WIDTH = 20     # mm，开孔宽度（Y方向）
+USB_HOLE_HEIGHT = 5   # mm，开孔高度（Z方向）
+USB_HOLE_THICKNESS = WALL_THICKNESS + 0.5  # mm，穿透壁厚
 
-# 计算左侧孔的位置
-# X方向：靠左侧（-X方向），距离槽内表面一定距离
-# PCB槽内表面在 X = -INNER_LENGTH/2 = -57.5mm
-hole_left_x_center = -INNER_LENGTH / 2 + BOTTOM_HOLE_LEFT_WIDTH / 2  # -55mm
+# 创建USB开孔切割体
+usb_cutout = create_usb_hole_cutout(
+    width=USB_HOLE_WIDTH,
+    height=USB_HOLE_HEIGHT,
+    thickness=USB_HOLE_THICKNESS,
+    x=0
+)
 
-# Y方向：从底板内表面向下穿透
-hole_left_y_start = -BOX_DEPTH / 2 + BOTTOM_THICKNESS  # -3mm
-hole_left_y_offset = hole_left_y_start - BOTTOM_HOLE_LEFT_DEPTH / 2
+# 绕X轴旋转90度，在YZ平面内旋转形状，同时保持-X拉伸方向
+usb_cutout = usb_cutout.rotate(Axis.Y, 270)
 
-# Z方向：居中于PCB槽
-hole_left_z_center = 0
+# 定位到左侧壁（-X方向）
+# 左侧外表面在 X = -OUTER_LENGTH/2
+# create_usb_hole_cutout创建的开孔从X=0向-X方向拉伸，需要平移到左侧壁
+usb_cutout = usb_cutout.translate(
+    Vector(-OUTER_LENGTH / 2, STEP1_HEIGHT - BOX_DEPTH/2 - 3, 0))
 
-bottom_hole_left = bottom_hole_left.translate(
-    Vector(hole_left_x_center, hole_left_y_offset, hole_left_z_center))
-
-# 在盒子上开左侧孔
-pcb_box_result = pcb_box - bottom_hole_left
-# 如果结果是列表，取第一个对象
-if isinstance(pcb_box_result, list):
-    pcb_box = pcb_box_result[0]
+# 在盒子上开孔
+cut_result = pcb_box - usb_cutout
+# 处理可能的Compound结果
+if isinstance(cut_result, list):
+    pcb_box = cut_result[0] if len(cut_result) > 0 else pcb_box
+elif hasattr(cut_result, 'wrapped'):
+    pcb_box = cut_result
 else:
-    pcb_box = pcb_box_result
-print(f"已在底板开左侧孔: {BOTTOM_HOLE_LEFT_WIDTH} x {BOTTOM_HOLE_LEFT_LENGTH} mm")
-print(
-    f"  孔位置: X中心={hole_left_x_center}mm, Y起点={hole_left_y_start}mm, Z中心={hole_left_z_center}mm")
+    pcb_box = cut_result
+print(f"已在左侧壁开USB槽: {USB_HOLE_WIDTH} x {USB_HOLE_HEIGHT} mm")
+print(f"  孔位置: X起点={-OUTER_LENGTH / 2}mm, Y居中, Z居中")
 
-# ========== 4.3 底板螺丝孔（与立柱对齐）==========
+# ========== 4.2 底板螺丝孔（与立柱对齐）==========
 # 在底面（XZ平面）上开2个螺丝孔，孔沿Y轴方向穿透底板
 # 底板位置：Y = -BOX_DEPTH/2 到 -BOX_DEPTH/2 + BOTTOM_THICKNESS，即 Y = -5mm 到 -3mm
 # 孔径：2.5mm，深度：穿透底板（2.5mm）
@@ -205,7 +209,8 @@ strut_hole_radius = STRUT_MOUNT_HOLE_DIA / 2  # 1.25mm
 for i, hole_x in enumerate([-STRUT_HOLE_X_OFFSET, STRUT_HOLE_X_OFFSET], 1):
     # 使用align参数，让圆柱从Z=0开始沿+Z方向，高度为strut_hole_depth
     with BuildPart() as strut_hole_builder:
-        Cylinder(strut_hole_radius, strut_hole_depth, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        Cylinder(strut_hole_radius, strut_hole_depth,
+                 align=(Align.CENTER, Align.CENTER, Align.MIN))
     strut_hole = strut_hole_builder.part.solid()
     # 此时圆柱范围：Z ∈ [0, 2.5]
 
@@ -220,7 +225,8 @@ for i, hole_x in enumerate([-STRUT_HOLE_X_OFFSET, STRUT_HOLE_X_OFFSET], 1):
 
     # 在盒子上开孔
     pcb_box = pcb_box - strut_hole
-    print(f"已在底板开立柱螺丝孔{i}: X={hole_x}mm, Y∈[-5, -2.5]mm, Z=0mm, 直径={STRUT_MOUNT_HOLE_DIA}mm, 沿+Y轴方向")
+    print(
+        f"已在底板开立柱螺丝孔{i}: X={hole_x}mm, Y∈[-5, -2.5]mm, Z=0mm, 直径={STRUT_MOUNT_HOLE_DIA}mm, 沿+Y轴方向")
 
 # ========== 5. 外角边缘导角 ==========
 all_edges = pcb_box.edges()

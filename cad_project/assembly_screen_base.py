@@ -4,6 +4,7 @@
 屏幕盒面朝Y方向，放置在底座上方10mm处
 """
 
+from pcb_box import BOTTOM_THICKNESS, BOX_DEPTH, OUTER_LENGTH, OUTER_WIDTH
 from screen_box import get_screen_box, SCREEN_BOX_LENGTH, SCREEN_BOX_WIDTH, SCREEN_BOX_DEPTH
 from base_strut import get_base_strut, BASE_LENGTH, BASE_WIDTH, BASE_THICKNESS, STRUT_SIZE
 from pcb_box import get_pcb_box
@@ -18,11 +19,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # ========== 装配参数 ==========
 GAP_HEIGHT = 20.0  # mm，底座顶面到屏幕盒底面的间隙
-
-# ========== PCB盒子参数 ==========
-PCB_BOX_LENGTH = 119.0  # mm，X方向
-PCB_BOX_WIDTH = 36.0    # mm，Y方向（旋转后，原来的Z）
-PCB_BOX_DEPTH = 10.0    # mm，Z方向（旋转后，原来的Y，开口方向）
 
 # ========== 外壳参数 ==========
 COVER_LENGTH = 120.0  # mm，X方向
@@ -82,16 +78,17 @@ print(
 pcb_box_original = get_pcb_box()
 
 # 旋转PCB盒子：绕X轴旋转90度，使开口面朝+Z方向
-# 原始方向：开口朝+Y方向，尺寸119mm(X) × 36mm(Z) × 10mm(Y)
-# 旋转后：长(119mm)沿X方向，宽(36mm)沿Y方向，深(10mm)沿Z方向
-pcb_box = pcb_box_original.rotate(Axis.X, 90)
+# 原始方向：开口朝+Y方向，尺寸63mm(X) × 36mm(Z) × 20mm(Y)
+# 旋转后：长(63mm)沿X方向，宽(36mm)沿Y方向，深(20mm)沿Z方向
+# 再绕Z轴旋转180度，在XY平面上翻转180度
+pcb_box = pcb_box_original.rotate(Axis.X, 90).rotate(Axis.Z, 180)
 
 # 计算PCB盒子Z方向位置
 # 立柱顶面在Z = BASE_THICKNESS/2 + STRUT_HEIGHT = 1 + 56 = 57mm
-# PCB盒子深度10mm（旋转后的Z方向）
-# PCB盒子Z中心 = 57 + 10/2 = 62mm，底面与立柱顶面对齐
+# PCB盒子深度20mm（旋转后的Z方向），底板厚度2mm
+# PCB盒子Z中心 = 57 + 2 + 10 = 69mm，内腔底面与立柱顶面对齐
 strut_top_z = BASE_THICKNESS/2 + STRUT_HEIGHT
-pcb_box_z_center = strut_top_z + PCB_BOX_DEPTH / 2
+pcb_box_z_center = strut_top_z + BOX_DEPTH/2
 
 # X方向：与立柱中轴线对齐（X=0）
 pcb_box_x_center = 0
@@ -106,9 +103,10 @@ print(f"已导入并定位PCB盒子")
 print(f"  旋转: 绕X轴90度，开口面朝+Z方向")
 print(f"  位置: X中心={pcb_box_x_center} mm（与立柱中轴线对齐）")
 print(f"  位置: Y中心={pcb_box_y_center} mm（与底座中心对齐）")
-print(f"  位置: Z中心={pcb_box_z_center} mm（立柱顶面+{PCB_BOX_DEPTH/2}mm）")
 print(
-    f"  PCB盒子Z范围: [{pcb_box_z_center - PCB_BOX_DEPTH/2}, {pcb_box_z_center + PCB_BOX_DEPTH/2}]")
+    f"  位置: Z中心={pcb_box_z_center} mm（立柱顶面+{BOTTOM_THICKNESS+BOX_DEPTH/2}mm）")
+print(
+    f"  PCB盒子Z范围: [{pcb_box_z_center - BOX_DEPTH/2}, {pcb_box_z_center + BOX_DEPTH/2}]")
 
 # ========== 4. 导入并定位外壳 ==========
 # 导入外壳模型
@@ -153,7 +151,7 @@ print(f"  2. 支撑板: 2个方形立柱（X方向）")
 print(
     f"  3. 屏幕盒: {SCREEN_BOX_LENGTH} x {SCREEN_BOX_WIDTH} x {SCREEN_BOX_DEPTH} mm")
 print(
-    f"  4. PCB盒子: {PCB_BOX_LENGTH} x {PCB_BOX_WIDTH} x {PCB_BOX_DEPTH} mm")
+    f"  4. PCB盒子: {OUTER_LENGTH} x {OUTER_WIDTH} x {BOX_DEPTH} mm")
 print(f"  5. 外壳: {COVER_LENGTH} x {COVER_WIDTH} x {COVER_HEIGHT} mm")
 
 # ========== 导出模型供其他模块使用 ==========
