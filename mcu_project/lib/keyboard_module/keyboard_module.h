@@ -12,6 +12,9 @@ constexpr uint8_t ENTER_PIN = 11; // ENTER 按键 - 输入上拉 (修改：避�
 // 消抖时间 (ms)
 constexpr uint32_t DEBOUNCE_MS = 20;
 
+// 双击检测时间窗口 (ms)
+constexpr uint32_t DOUBLE_CLICK_MS = 300;
+
 // 按键枚举
 enum KeyType {
     KEY_MODE,   // MODE 按键
@@ -23,9 +26,12 @@ enum KeyType {
 struct KeyInfo
 {
     uint8_t gpio;
-    bool lastStableState;    // 上次稳定状态
-    bool currentState;       // 当前状态
-    uint32_t lastChangeTime; // 上次状态变化时间
+    bool lastStableState;     // 上次稳定状态
+    bool currentState;        // 当前状态
+    uint32_t lastChangeTime;  // 上次状态变化时间
+    uint32_t pressStartTime;  // 按下开始时间
+    uint32_t lastReleaseTime; // 上次释放时间（用于双击检测）
+    uint8_t clickCount;       // 点击计数
 };
 
 // ========== 按键模块接口 ==========
@@ -55,5 +61,17 @@ void keyboard_on_mode_pressed();
  * 可在 main.cpp 中实现自定义功能
  */
 void keyboard_on_enter_pressed();
+
+/**
+ * @brief ENTER按键短按回调（按下后释放）
+ * 可在 main.cpp 中实现自定义功能
+ */
+void keyboard_on_enter_short_press();
+
+/**
+ * @brief ENTER按键双击回调
+ * 可在 main.cpp 中实现自定义功能
+ */
+void keyboard_on_enter_double_click();
 
 #endif // KEYBOARD_MODULE_H

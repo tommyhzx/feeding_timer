@@ -11,7 +11,7 @@ constexpr uint8_t MAX7219_CS_PIN = 8;    // Chip Select
 constexpr uint8_t MAX7219_CLK_PIN = 10;  // Clock (修改：避开 Strapping 引脚 GPIO15)
 
 // MAX7219 设备配置
-constexpr uint8_t MAX7219_NUM_DEVICES = 1;  // 单个 8x8 点阵模块
+constexpr uint8_t MAX7219_NUM_DEVICES = 2;  // 两个 8x8 点阵模块级联（8x16）
 
 // 亮度设置 (0-15)
 constexpr uint8_t MAX7219_INTENSITY = 8;
@@ -31,6 +31,15 @@ void max7219_init();
  * 在 8x8 点阵屏上显示两位数字，十位在左侧，个位在右侧
  */
 void max7219_set_minute(uint8_t minute);
+
+/**
+ * @brief 设置并显示时间（时:分）
+ * @param hour 小时 (0-23)
+ * @param minute 分钟 (0-59)
+ *
+ * 在 8x16 点阵屏上显示 HH:MM 格式的时间
+ */
+void max7219_set_time(uint8_t hour, uint8_t minute);
 
 /**
  * @brief 设置按键反馈效果

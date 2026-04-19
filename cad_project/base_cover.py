@@ -11,7 +11,7 @@ from ocp_vscode import show
 # ========== 罩壳参数 ==========
 COVER_LENGTH = 120.0  # mm，长度（X方向），与底座一致
 COVER_WIDTH = 45.0    # mm，宽度（Y方向），与底座一致
-COVER_HEIGHT = 60.0   # mm，高度（Z方向）
+COVER_HEIGHT = 80.0   # mm，高度（Z方向）
 WALL_THICKNESS = 2.0  # mm，壁厚
 FILLET_RADIUS = 2.0   # mm，顶部边缘圆角半径
 VERTICAL_FILLET_RADIUS = 5.0   # mm，竖直边缘圆角半径
@@ -80,8 +80,8 @@ opening_x = 0
 opening_back_y = inner_width / 2  # 20.5mm
 opening_y = opening_back_y + opening_depth / 2
 
-# Z方向：居中于罩壳，略向上偏移以更好显示
-opening_z = 0  # 向上偏移5mm，使开口中心位于 Z=5mm
+# Z方向：向下偏移10mm
+opening_z = -10.0  # 向下偏移10mm
 
 opening_box = opening_box.translate(Vector(opening_x, opening_y, opening_z))
 
@@ -187,7 +187,7 @@ for e in cover.edges():
         # 检查X和Y是否靠近外边缘（四个角）
         pos = e.position_at(0.5)
         if (abs(pos.X) > COVER_LENGTH / 2 - 5 and   # 靠近X方向边缘
-            abs(pos.Y) > COVER_WIDTH / 2 - 5):      # 靠近Y方向边缘
+                abs(pos.Y) > COVER_WIDTH / 2 - 5):      # 靠近Y方向边缘
             fillet_edges.append(e)
 
 print(f"顶部外角边缘数量: {len(fillet_edges)}")

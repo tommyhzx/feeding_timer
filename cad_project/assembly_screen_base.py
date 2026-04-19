@@ -121,7 +121,8 @@ base_cover = base_cover_original
 # 底座底面在 Z = -BASE_THICKNESS/2 = -1mm
 # 外壳底部应与底座底面对齐（因为底座厚度2mm，外壳直接罩在底座上）
 # 外壳高度80mm，Z中心 = -1 + 80/2 = 39mm
-base_cover_z_center = -BASE_THICKNESS/2 + COVER_HEIGHT / 2
+# 向上偏移10mm
+base_cover_z_center = -BASE_THICKNESS/2 + COVER_HEIGHT / 2 + 10.0
 
 # X方向：与底座中心对齐（X=0）
 base_cover_x_center = 0

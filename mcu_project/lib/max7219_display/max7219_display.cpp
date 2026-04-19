@@ -23,46 +23,79 @@ namespace MAX7219_Register {
 static uint8_t normalIntensity = MAX7219_INTENSITY;
 static uint8_t pressedIntensity = 15;  // 按键反馈时使用最大亮度
 
-// ========== 显示缓冲区 (8行 x 8列) ==========
-static uint8_t displayBuffer[8] = {0};
+// ========== 显示缓冲区 (2个设备 x 8行) ==========
+static uint8_t displayBuffer[MAX7219_NUM_DEVICES][8] = {0};
 
 // ========== 底层 SPI 操作 ==========
 
 /**
- * @brief 向 MAX7219 发送命令
+ * @brief 向 MAX7219 发送命令（支持级联）
+ * @param device 设备索引 (0=第一个设备, 1=第二个设备, 255=所有设备)
  * @param address 寄存器地址
  * @param data 数据
  */
-static void max7219_send_byte(uint8_t address, uint8_t data)
+static void max7219_send_byte(uint8_t device, uint8_t address, uint8_t data)
 {
     digitalWrite(MAX7219_CS_PIN, LOW);  // CS 拉低，开始传输
 
-    // 发送地址
-    shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, address);
-    // 发送数据
-    shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, data);
+    if (device == 255)
+    {
+        // 发送到所有设备
+        for (uint8_t i = 0; i < MAX7219_NUM_DEVICES; i++)
+        {
+            shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, address);
+            shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, data);
+        }
+    }
+    else
+    {
+        // 发送到特定设备
+        for (uint8_t i = 0; i < MAX7219_NUM_DEVICES; i++)
+        {
+            if (i == device)
+            {
+                shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, address);
+                shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, data);
+            }
+            else
+            {
+                // 发送空操作
+                shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, MAX7219_Register::NO_OP);
+                shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, 0);
+            }
+        }
+    }
 
     digitalWrite(MAX7219_CS_PIN, HIGH); // CS 拉高，结束传输
 }
 
 /**
- * @brief 设置 MAX7219 寄存器
+ * @brief 设置 MAX7219 寄存器（所有设备）
  * @param reg 寄存器地址
  * @param data 数据
  */
 static void max7219_set_register(uint8_t reg, uint8_t data)
 {
-    max7219_send_byte(reg, data);
+    max7219_send_byte(255, reg, data);
 }
 
 /**
- * @brief 刷新显示缓冲区到 MAX7219
+ * @brief 刷新显示缓冲区到 MAX7219（支持级联）
  */
 static void max7219_refresh()
 {
     for (uint8_t row = 0; row < 8; row++)
     {
-        max7219_set_register(MAX7219_Register::DIGIT0 + row, displayBuffer[row]);
+        digitalWrite(MAX7219_CS_PIN, LOW);  // CS 拉低，开始传输
+
+        // 按照级联顺序发送数据（先发送到最后一个设备）
+        for (int8_t dev = MAX7219_NUM_DEVICES - 1; dev >= 0; dev--)
+        {
+            shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, MAX7219_Register::DIGIT0 + row);
+            shiftOut(MAX7219_DIN_PIN, MAX7219_CLK_PIN, MSBFIRST, displayBuffer[dev][row]);
+        }
+
+        digitalWrite(MAX7219_CS_PIN, HIGH); // CS 拉高，结束传输
     }
 }
 
@@ -192,7 +225,7 @@ void max7219_init()
     pinMode(MAX7219_CS_PIN, OUTPUT);
     digitalWrite(MAX7219_CS_PIN, HIGH);  // CS 默认为高
 
-    // 初始化 MAX7219
+    // 初始化所有 MAX7219 设备
     max7219_set_register(MAX7219_Register::DISPLAY_TEST, 0x00);  // 退出测试模式
     max7219_set_register(MAX7219_Register::DECODE_MODE, 0x00);   // 不使用 BCD 解码
     max7219_set_register(MAX7219_Register::SCAN_LIMIT, 0x07);    // 扫描所有8位数字
@@ -202,23 +235,27 @@ void max7219_init()
     // 清空显示
     max7219_clear();
 
-    Serial.println("MAX7219 8x8 Dot Matrix Display initialized");
+    Serial.print("MAX7219 ");
+    Serial.print(MAX7219_NUM_DEVICES);
+    Serial.print("x 8x8 Dot Matrix Display initialized (");
+    Serial.print(MAX7219_NUM_DEVICES * 8);
+    Serial.println("x8)");
 
     // 启动时显示 "--"
     memset(displayBuffer, 0, sizeof(displayBuffer));
-    displayBuffer[3] = 0b00010000;  // 第 3 行中间列
-    displayBuffer[4] = 0b00010000;  // 第 4 行中间列
+    displayBuffer[0][3] = 0b00010000;  // 第一个设备，第 3 行中间列
+    displayBuffer[0][4] = 0b00010000;  // 第一个设备，第 4 行中间列
     max7219_refresh();
 }
 
 /**
- * @brief 绘制单个数字到指定列位置
- * @param col 起始列 (0-7)
+ * @brief 绘制单个数字到指定列位置（支持级联设备）
+ * @param col 起始列 (0-15)
  * @param digit 数字 (0-9)
  */
 static void draw_digit(uint8_t col, uint8_t digit)
 {
-    if (digit > 9 || col > 7) {
+    if (digit > 9 || col >= MAX7219_NUM_DEVICES * 8) {
         return;
     }
 
@@ -229,13 +266,18 @@ static void draw_digit(uint8_t col, uint8_t digit)
     {
         for (uint8_t c = 0; c < 5; c++)
         {
-            if (col + c < 8)
+            uint8_t absCol = col + c;
+            if (absCol < MAX7219_NUM_DEVICES * 8)
             {
+                // 计算设备和列索引
+                uint8_t device = absCol / 8;
+                uint8_t deviceCol = absCol % 8;
+
                 // 获取字模中该位置的像素
                 bool pixel = ((*pattern)[row] >> (4 - c)) & 0x01;
                 if (pixel)
                 {
-                    displayBuffer[row] |= (1 << (7 - (col + c)));
+                    displayBuffer[device][row] |= (1 << (7 - deviceCol));
                 }
             }
         }
@@ -250,7 +292,7 @@ void max7219_set_minute(uint8_t minute)
     }
 
     // 清空显示缓冲区
-    memset(displayBuffer, 0, sizeof(displayBuffer));
+    memset(displayBuffer, 0, sizeof(displayBuffer[0][0]) * MAX7219_NUM_DEVICES * 8);
 
     // 计算十位和个位
     uint8_t tens = minute / 10;
@@ -287,7 +329,7 @@ void max7219_set_feedback(bool pressed)
 
 void max7219_clear()
 {
-    memset(displayBuffer, 0, sizeof(displayBuffer));
+    memset(displayBuffer, 0, sizeof(displayBuffer[0][0]) * MAX7219_NUM_DEVICES * 8);
     max7219_refresh();
 }
 
@@ -299,4 +341,80 @@ void max7219_set_intensity(uint8_t intensity)
     }
     normalIntensity = intensity;
     max7219_set_register(MAX7219_Register::INTENSITY, normalIntensity);
+}
+
+/**
+ * @brief 绘制冒号分隔符
+ * @param col 列位置 (0-15)
+ */
+static void draw_colon(uint8_t col)
+{
+    if (col >= MAX7219_NUM_DEVICES * 8) {
+        return;
+    }
+
+    uint8_t device = col / 8;
+    uint8_t deviceCol = col % 8;
+
+    // 冒号在行2、4显示点
+    displayBuffer[device][2] |= (1 << (7 - deviceCol));
+    displayBuffer[device][4] |= (1 << (7 - deviceCol));
+}
+
+void max7219_set_time(uint8_t hour, uint8_t minute)
+{
+    if (hour > 23) hour = 23;
+    if (minute > 59) minute = 59;
+
+    // 清空显示缓冲区
+    memset(displayBuffer, 0, sizeof(displayBuffer[0][0]) * MAX7219_NUM_DEVICES * 8);
+
+    // 计算各位数字
+    uint8_t hourTens = hour / 10;
+    uint8_t hourOnes = hour % 10;
+    uint8_t minuteTens = minute / 10;
+    uint8_t minuteOnes = minute % 10;
+
+    // 布局：HH:MM
+    // 列0-4: 小时十位（如果为0则不显示）
+    // 列5-9: 小时个位
+    // 列10: 冒号
+    // 列11-15: 分钟十位和个位
+
+    uint8_t currentCol = 0;
+
+    // 绘制小时十位（如果是0则跳过）
+    if (hourTens > 0)
+    {
+        draw_digit(currentCol, hourTens);
+        currentCol += 5;
+    }
+
+    // 绘制小时个位
+    draw_digit(currentCol, hourOnes);
+    currentCol += 5;
+
+    // 绘制冒号
+    draw_colon(currentCol);
+    currentCol += 1;
+
+    // 绘制分钟十位
+    draw_digit(currentCol, minuteTens);
+    currentCol += 5;
+
+    // 绘制分钟个位（如果空间不够则覆盖）
+    if (currentCol < MAX7219_NUM_DEVICES * 8 - 4)
+    {
+        draw_digit(currentCol, minuteOnes);
+    }
+
+    // 刷新显示
+    max7219_refresh();
+
+    Serial.print("[MAX7219] Time set to: ");
+    if (hour < 10) Serial.print("0");
+    Serial.print(hour);
+    Serial.print(":");
+    if (minute < 10) Serial.print("0");
+    Serial.println(minute);
 }
