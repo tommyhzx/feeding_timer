@@ -9,7 +9,7 @@ from ocp_vscode import show
 from elements.mounting_holes import create_stepped_cylinder
 
 # ========== 屏幕参数 ==========
-SCREEN_LENGTH = 75.0    # mm，屏幕长度
+SCREEN_LENGTH = 66.0    # mm，屏幕长度
 SCREEN_WIDTH = 33.0     # mm，屏幕宽度
 
 # ========== 盒子参数 ==========
@@ -28,9 +28,9 @@ INNER_DEPTH = BOX_DEPTH - BOTTOM_THICKNESS  # 13mm
 
 # ========== 台阶型固定柱参数 ==========
 STEP1_DIAMETER = 4.0    # 底层直径
-STEP1_HEIGHT = 2.0      # 底层高度
+STEP1_HEIGHT = 1.0      # 底层高度
 STEP2_DIAMETER = 2.8    # 上层直径
-STEP2_HEIGHT = 2.0      # 上层高度
+STEP2_HEIGHT = 3.0      # 上层高度
 SCREEN_HOLE_OFFSET = 3.0  # mm，孔距槽边缘距离
 
 # ========== 走线孔参数 ==========
@@ -83,7 +83,8 @@ hole_x = INNER_LENGTH / 2 - SCREEN_HOLE_OFFSET  # 34.5mm
 hole_y = INNER_WIDTH / 2 - SCREEN_HOLE_OFFSET   # 13mm
 
 # 固定柱的Z位置：在底板上表面
-cavity_top_z = -BOX_DEPTH / 2 + BOTTOM_THICKNESS
+cavity_top_z = -BOX_DEPTH / 2 + BOTTOM_THICKNESS + \
+    (STEP1_HEIGHT + STEP2_HEIGHT)/2
 
 # 四个固定柱位置
 cylinder_positions = [

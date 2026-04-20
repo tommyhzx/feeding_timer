@@ -41,13 +41,13 @@ def create_stepped_cylinder(x, y, z_offset=0, step1_dia=None, step1_height=None,
     half_height = total_height / 2
 
     with BuildPart(Location(Vector(x, y, 0))) as stepped_cyl:
-        # 底层圆柱：使用align=(Align.CENTER, Align.CENTER, Align.MIN)
-        # 从Z=-half_height开始，向上生长h1
+        # 底层圆柱：从Z=-half_height开始，向上生长h1
         with Locations(Location(Vector(0, 0, -half_height))):
             Cylinder(radius=d1/2, height=h1,
                      align=(Align.CENTER, Align.CENTER, Align.MIN))
-        # 上层圆柱：从Z=0开始，向上生长h2
-        with Locations(Location(Vector(0, 0, 0))):
+        # 上层圆柱：从底层圆柱顶部开始，向上生长h2
+        step1_top_z = -half_height + h1  # 底层圆柱的顶部Z坐标
+        with Locations(Location(Vector(0, 0, step1_top_z))):
             Cylinder(radius=d2/2, height=h2,
                      align=(Align.CENTER, Align.CENTER, Align.MIN))
 
@@ -133,19 +133,19 @@ if __name__ == "__main__":
     from ocp_vscode import show
 
     # 测试台阶圆柱
-    # print("测试台阶圆柱...")
-    # stepped_cyl = create_stepped_cylinder(
-    #     x=0,
-    #     y=0,
-    #     z_offset=0,
-    #     step1_dia=4.0,
-    #     step1_height=7.0,
-    #     step2_dia=2.8,
-    #     step2_height=7.0
-    # )
-    # show(stepped_cyl)
+    print("测试台阶圆柱...")
+    stepped_cyl = create_stepped_cylinder(
+        x=0,
+        y=0,
+        z_offset=0,
+        step1_dia=4.0,
+        step1_height=2.0,
+        step2_dia=2.8,
+        step2_height=3.0
+    )
+    show(stepped_cyl)
 
     # # 测试USB开孔：width=24, height=12, thickness=5
-    print("测试USB开孔...")
-    usb_hole = create_usb_hole_cutout(width=24.0, height=12.0, thickness=5.0)
-    show(usb_hole)
+    # print("测试USB开孔...")
+    # usb_hole = create_usb_hole_cutout(width=24.0, height=12.0, thickness=5.0)
+    # show(usb_hole)
