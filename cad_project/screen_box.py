@@ -7,6 +7,7 @@
 from build123d import *
 from ocp_vscode import show
 from elements.mounting_holes import create_stepped_cylinder
+from elements.holes import create_m2_countersunk_hole_at
 
 # ========== 屏幕参数 ==========
 SCREEN_LENGTH = 66.0    # mm，屏幕长度
@@ -31,11 +32,10 @@ STEP1_DIAMETER = 4.0    # 底层直径
 STEP1_HEIGHT = 1.0      # 底层高度
 STEP2_DIAMETER = 2.8    # 上层直径
 STEP2_HEIGHT = 3.0      # 上层高度
-SCREEN_HOLE_OFFSET = 3.0  # mm，孔距槽边缘距离
 
 # ========== 走线孔参数 ==========
 CABLE_HOLE_LENGTH = 15.0   # mm，Y方向长度
-CABLE_HOLE_WIDTH = 5.0     # mm，Z方向宽度
+CABLE_HOLE_WIDTH = 10.0     # mm，Z方向宽度
 CABLE_HOLE_DEPTH = WALL_THICKNESS + 0.5  # 2.5mm，穿透槽壁
 
 # ========== 导角参数 ==========
@@ -79,8 +79,8 @@ print(f"已创建内腔并掏空")
 
 # ========== 3. 添加台阶型固定柱 ==========
 # 计算固定柱位置（相对于内腔中心）
-hole_x = INNER_LENGTH / 2 - SCREEN_HOLE_OFFSET  # 34.5mm
-hole_y = INNER_WIDTH / 2 - SCREEN_HOLE_OFFSET   # 13mm
+hole_x = INNER_LENGTH / 2 - 2.5  # X方向距边缘2.5mm
+hole_y = INNER_WIDTH / 2 - 6.5   # Y方向距边缘5.5mm
 
 # 固定柱的Z位置：在底板上表面
 cavity_top_z = -BOX_DEPTH / 2 + BOTTOM_THICKNESS + \
@@ -147,26 +147,29 @@ cable_hole = cable_hole.translate(
 screen_box = screen_box - cable_hole
 print(f"已在左侧壁开走线孔: {CABLE_HOLE_LENGTH} x {CABLE_HOLE_WIDTH} mm")
 
-# ========== 5. 背面开立柱固定螺丝孔 ==========
-# 在屏幕盒背面（-Z方向）开两个螺丝孔，用于固定立柱
+# ========== 5. 背面开立柱固定螺丝孔（M2沉头螺丝孔） ==========
+# 在屏幕盒背面（-Z方向）开两个沉头螺丝孔
+# 使用 elements/holes.py 中的 create_m2_countersunk_hole_at 函数
 for hole_x in [-STRUT_MOUNT_HOLE_X, STRUT_MOUNT_HOLE_X]:
-    with BuildPart() as hole_builder:
-        Cylinder(STRUT_MOUNT_HOLE_DIA / 2, STRUT_MOUNT_HOLE_DEPTH,
-                 align=(Align.CENTER, Align.CENTER, Align.MIN))
-    hole = hole_builder.part.solid()
+    # 孔从背面向内开，沉头面与背面齐平
+    hole_z_pos = -BOX_DEPTH / 2 + BOTTOM_THICKNESS
 
-    # 定位孔：在背面（-Z方向），XY平面指定位置
-    # 盒子背面在 Z = -BOX_DEPTH/2 = -7.5mm
-    # 孔从背面向内开，中心应该在背面稍内位置
-    hole_z_pos = -BOX_DEPTH / 2 - STRUT_MOUNT_HOLE_DEPTH / 2 + 0.5
-    hole_pos = Vector(hole_x, 0, hole_z_pos)
-    hole = hole.translate(hole_pos)
+    # 创建沉头孔
+    hole = create_m2_countersunk_hole_at(
+        x=hole_x,
+        y=0,
+        z=hole_z_pos,
+        head_dia=3.7,          # M2螺丝头直径
+        head_thickness=1.2,    # M2螺丝头厚度
+        thru_hole_dia=2.2,     # 通孔直径
+        thru_hole_depth=STRUT_MOUNT_HOLE_DEPTH  # 通孔深度
+    )
 
     # 开孔
     screen_box = screen_box - hole
-    print(f"  已在背面开立柱固定孔: X={hole_x}mm, Z={hole_z_pos}mm")
+    print(f"  已在背面开M2沉头螺丝孔: X={hole_x}mm, 头部φ3.7mm")
 
-print(f"已背面开2个立柱固定螺丝孔（M2）")
+print(f"已背面开2个M2沉头螺丝孔")
 
 # ========== 6. 外角边缘导角 ==========
 all_edges = screen_box.edges()
