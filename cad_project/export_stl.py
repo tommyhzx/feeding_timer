@@ -9,6 +9,9 @@ from build123d import export_stl, export_step
 
 # 导入屏幕外壳模型
 from screen_box import get_screen_box
+# 导入 PCB 盒子模型
+from pcb_box import get_pcb_box
+
 
 # 获取当前目录
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -25,24 +28,14 @@ export_step(screen_box, base_step_path)
 print(f"屏幕盒子已导出: {base_stl_path}")
 print(f"屏幕盒子已导出: {base_step_path}")
 
-# # ========== 导出 PCB 外壳 ==========
-# pcb_cover = get_pcb_cover()
-#
-# cover_stl_path = os.path.join(EXPORTS_DIR, "pcb_cover.stl")
-# cover_step_path = os.path.join(EXPORTS_DIR, "pcb_cover.step")
-# export_stl(pcb_cover, cover_stl_path)
-# export_step(pcb_cover, cover_step_path)
-# print(f"PCB 外壳已导出: {cover_stl_path}")
-# print(f"PCB 外壳已导出: {cover_step_path}")
-#
-# # ========== 导出空心盒子 ==========
-# hollow_box = get_hollow_box()
-#
-# box_stl_path = os.path.join(EXPORTS_DIR, "hollow_box.stl")
-# box_step_path = os.path.join(EXPORTS_DIR, "hollow_box.step")
-# export_stl(hollow_box, box_stl_path)
-# export_step(hollow_box, box_step_path)
-# print(f"空心盒子已导出: {box_stl_path}")
-# print(f"空心盒子已导出: {box_step_path}")
+# ========== 导出 PCB 盒子 ==========
+pcb_box = get_pcb_box()
+
+box_stl_path = os.path.join(EXPORTS_DIR, "pcb_box.stl")
+box_step_path = os.path.join(EXPORTS_DIR, "pcb_box.step")
+export_stl(pcb_box, box_stl_path)
+export_step(pcb_box, box_step_path)
+print(f"PCB 盒子已导出: {box_stl_path}")
+print(f"PCB 盒子已导出: {box_step_path}")
 
 print("\n所有外壳导出完成！")

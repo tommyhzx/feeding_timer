@@ -212,10 +212,7 @@ for i, hole_x in enumerate([-STRUT_HOLE_X_OFFSET, STRUT_HOLE_X_OFFSET], 1):
         x=hole_x,
         y=0,
         z=hole_z_pos,
-        head_dia=3.7,          # M2螺丝头直径
-        head_thickness=1.2,    # M2螺丝头厚度
-        thru_hole_dia=2.2,     # 通孔直径
-        thru_hole_depth=strut_hole_depth  # 通孔深度
+        thru_hole_depth=strut_hole_depth
     )
 
     # 在盒子上开孔

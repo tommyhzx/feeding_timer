@@ -14,7 +14,7 @@ SCREEN_LENGTH = 66.0    # mm，屏幕长度
 SCREEN_WIDTH = 33.0     # mm，屏幕宽度
 
 # ========== 盒子参数 ==========
-BOX_DEPTH = 15.0        # mm，盒子深度（Z方向）
+BOX_DEPTH = 17.0        # mm，盒子深度（Z方向）
 WALL_THICKNESS = 2.0    # mm，壁厚
 BOTTOM_THICKNESS = 2.0  # mm，底板厚度
 
@@ -29,13 +29,13 @@ INNER_DEPTH = BOX_DEPTH - BOTTOM_THICKNESS  # 13mm
 
 # ========== 台阶型固定柱参数 ==========
 STEP1_DIAMETER = 5.0    # 底层直径
-STEP1_HEIGHT = 1.0      # 底层高度
+STEP1_HEIGHT = 2.0      # 底层高度
 STEP2_DIAMETER = 2.8    # 上层直径
 STEP2_HEIGHT = 3.0      # 上层高度
 
 # ========== 走线孔参数 ==========
 CABLE_HOLE_LENGTH = 15.0   # mm，Y方向长度
-CABLE_HOLE_WIDTH = 10.0     # mm，Z方向宽度
+CABLE_HOLE_WIDTH = 12.0     # mm，Z方向宽度
 CABLE_HOLE_DEPTH = WALL_THICKNESS + 0.5  # 2.5mm，穿透槽壁
 
 # ========== 导角参数 ==========
@@ -159,10 +159,7 @@ for hole_x in [-STRUT_MOUNT_HOLE_X, STRUT_MOUNT_HOLE_X]:
         x=hole_x,
         y=0,
         z=hole_z_pos,
-        head_dia=3.7,          # M2螺丝头直径
-        head_thickness=1.2,    # M2螺丝头厚度
-        thru_hole_dia=2.2,     # 通孔直径
-        thru_hole_depth=STRUT_MOUNT_HOLE_DEPTH  # 通孔深度
+        thru_hole_depth=STRUT_MOUNT_HOLE_DEPTH
     )
 
     # 开孔
