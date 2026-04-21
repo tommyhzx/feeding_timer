@@ -28,7 +28,7 @@ INNER_WIDTH = SCREEN_WIDTH    # 32mm
 INNER_DEPTH = BOX_DEPTH - BOTTOM_THICKNESS  # 13mm
 
 # ========== 台阶型固定柱参数 ==========
-STEP1_DIAMETER = 4.0    # 底层直径
+STEP1_DIAMETER = 5.0    # 底层直径
 STEP1_HEIGHT = 1.0      # 底层高度
 STEP2_DIAMETER = 2.8    # 上层直径
 STEP2_HEIGHT = 3.0      # 上层高度
@@ -79,7 +79,7 @@ print(f"已创建内腔并掏空")
 
 # ========== 3. 添加台阶型固定柱 ==========
 # 计算固定柱位置（相对于内腔中心）
-hole_x = INNER_LENGTH / 2 - 2.5  # X方向距边缘2.5mm
+hole_x = INNER_LENGTH / 2 - 3  # X方向距边缘2.5mm
 hole_y = INNER_WIDTH / 2 - 6.5   # Y方向距边缘5.5mm
 
 # 固定柱的Z位置：在底板上表面
