@@ -1,0 +1,140 @@
+{
+  "pcb_placements": [
+    {
+      "selector": "PWR_USB",
+      "center": {
+        "x": -47.83257275346659,
+        "y": -0.6915180983252287
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_R_VOLT2",
+      "center": {
+        "x": -40.77273545831081,
+        "y": -4.003421573924001
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_R_VOLT1",
+      "center": {
+        "x": -40.772735458310834,
+        "y": -6.691518098325233
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "MCU_ESP32",
+      "center": {
+        "x": 7.721952097965065,
+        "y": -0.8067711147127667
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_ESD",
+      "center": {
+        "x": -41.16510895011707,
+        "y": -0.6915180983252291
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_LDO",
+      "center": {
+        "x": -44.01674770394381,
+        "y": 10.606699081577528
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_LED_RED",
+      "center": {
+        "x": -28.076265081937695,
+        "y": 8.315144966684674
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_LED_BLUE",
+      "center": {
+        "x": -24.82712047541869,
+        "y": 6.396542409508374
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_PM",
+      "center": {
+        "x": -35.301638753826765,
+        "y": 11.352422114172517
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_C_OUT",
+      "center": {
+        "x": -37.57113272105168,
+        "y": 4.093192868719612
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_L",
+      "center": {
+        "x": -38.9151809832523,
+        "y": -14.698181163335136
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_BAT",
+      "center": {
+        "x": -34.03385557356384,
+        "y": -14.915180983252295
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_C_BAT",
+      "center": {
+        "x": -36.764361606338916,
+        "y": -11.527012425715832
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_R_DP",
+      "center": {
+        "x": -22.13519268863677,
+        "y": -10.027012425715832
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_R_DM",
+      "center": {
+        "x": -25.102084458851074,
+        "y": -14.003241491085898
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_C_LDO_OUT",
+      "center": {
+        "x": -22.405096344318387,
+        "y": 11.837205114352601
+      },
+      "relative_to": "group_center"
+    },
+    {
+      "selector": "PWR_R_LED_BLUE",
+      "center": {
+        "x": -30.972807491446062,
+        "y": -11.698181163335136
+      },
+      "relative_to": "group_center"
+    }
+  ]
+}

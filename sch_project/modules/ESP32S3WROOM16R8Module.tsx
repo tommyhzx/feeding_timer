@@ -52,8 +52,8 @@ export const ESP32S3WROOM16R8Module = (props: {
 
   return (
     <group
-      pcbPack
-      pcbGap="1mm"
+      // pcbPack
+      // pcbGap="1mm"
       name={name}
       pcbX={pcbX}
       pcbY={pcbY}
