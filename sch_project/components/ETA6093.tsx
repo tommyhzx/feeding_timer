@@ -32,68 +32,12 @@ const eta6093PinLabels = {
   pin5: "SW",
 } as const;
 
-/**
- * ETA6093 SOT-23-5 footprint
- * 封装尺寸: 2.9mm x 1.6mm
- * 引脚间距: 0.95mm
- *
- * Pin positions (SOT23-5 standard):
- * Pin 1 (左上): OUT
- * Pin 2 (右上): GND
- * Pin 3 (右下): LED
- * Pin 4 (左下): BAT
- * Pin 5 (中间): SW
- */
-const eta6093FootprintPads = [
-  { portHints: ["pin1"], pcbX: -0.95, pcbY: 1.4, width: 1.0, height: 0.6 },  // OUT
-  { portHints: ["pin2"], pcbX: 0.95, pcbY: 1.4, width: 1.0, height: 0.6 },   // GND
-  { portHints: ["pin3"], pcbX: 0.95, pcbY: -1.4, width: 1.0, height: 0.6 },  // LED
-  { portHints: ["pin4"], pcbX: -0.95, pcbY: -1.4, width: 1.0, height: 0.6 }, // BAT
-  { portHints: ["pin5"], pcbX: 0, pcbY: 0, width: 1.2, height: 1.2 },        // SW (center)
-];
-
 export const ETA6093 = (props: ChipProps<typeof eta6093PinLabels>) => (
   <chip
     {...props}
     manufacturerPartNumber="ETA6093S2F"
     pinLabels={eta6093PinLabels}
-    footprint={
-      <footprint>
-        {/* 引脚焊盘 */}
-        {eta6093FootprintPads.map((pad) => (
-          <smtpad
-            portHints={pad.portHints}
-            pcbX={pad.pcbX}
-            pcbY={pad.pcbY}
-            width={pad.width}
-            height={pad.height}
-            shape="rect"
-          />
-        ))}
-        {/* 芯片外框丝印 */}
-        <silkscreenpath
-          route={[
-            { x: -1.5, y: 2.0 },
-            { x: 1.5, y: 2.0 },
-            { x: 1.5, y: -2.0 },
-            { x: -1.5, y: -2.0 },
-            { x: -1.5, y: 2.0 },
-          ]}
-        />
-        {/* 引脚 1 标识点 */}
-        <silkscreencircle pcbX={-0.95} pcbY={0} radius="0.2" />
-        {/* Pin 5 (SW) 中心焊盘丝印 */}
-        <silkscreenpath
-          route={[
-            { x: -0.3, y: 0.3 },
-            { x: 0.3, y: 0.3 },
-            { x: 0.3, y: -0.3 },
-            { x: -0.3, y: -0.3 },
-            { x: -0.3, y: 0.3 },
-          ]}
-        />
-      </footprint>
-    }
+    footprint="sot23_5"
   />
 );
 

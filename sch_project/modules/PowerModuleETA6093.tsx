@@ -115,7 +115,7 @@ export const PowerModuleETA6093 = (props: {
       <group
         name={`${name}_PWRCONN_GROUP`}
         // pcbFlex pcbFlexGap="1mm"
-        schX={0}
+        schX={5}
         schY={0}
         pcbX={10}
         pcbY={0}
@@ -161,37 +161,64 @@ export const PowerModuleETA6093 = (props: {
       >
         <ETA6093
           name={`${name}_PM`}
+          pcbX={0}
+          pcbY={0}
         />
 
         {/* ETA6093输出电容 22µF - 靠近OUT引脚 (Pin1, 左上方) */}
         <capacitor
           name={`${name}_C_OUT`}
           capacitance="22µF"
-          footprint="1206"
+          footprint="0805"
+          pcbX={-4}
+          pcbY={0}
+          pcbRotation={270}
         />
 
-        {/* 电池旁路电容 10µF - 靠近BAT引脚 (Pin4, 左下方) */}
+        {/* 电池旁路电容 10µF - 靠近BAT引脚 (Pin4, 右下方) */}
         <capacitor
           name={`${name}_C_BAT`}
           capacitance="10µF"
           footprint="0805"
+          pcbX={2}
+          pcbY={-4}
         />
 
-        {/* 电感 4.7µH (BAT ↔ SW) - 靠近BAT和SW引脚 (左下方) */}
+        {/* 电感 4.7µH (BAT ↔ SW) - 横跨BAT和SW引脚 (下方) */}
         <inductor
           name={`${name}_L`}
           inductance="4.7µH"
           footprint="0805"
+          pcbX={4}
+          pcbY={0}
+          pcbRotation={90}
+        />
+      </group>
+      <group
+        name={`${name}_LED_GROUP`}
+        pcbFlex pcbFlexGap="2mm" pcbAlignItems="center" pcbJustifyContent="space-between"
+        schX={0}
+        schY={-5}
+        pcbX={0}
+        pcbY={-10}
+      >
+        <resistor
+          name={`${name}_R_LED_RED`}
+          resistance="2kΩ"
+          footprint="0603"
+          pcbRotation={90}
         />
          <led
           name={`${name}_LED_RED`}
           color="red"
           footprint="0603"
+          pcbRotation={90}
         />
-        <resistor
-          name={`${name}_R_LED_RED`}
+         <resistor
+          name={`${name}_R_LED_BLUE`}
           resistance="2kΩ"
           footprint="0603"
+          pcbRotation={90}
         />
 
         {/* 蓝色LED (放电指示) - 放在边缘方便观察 */}
@@ -199,12 +226,9 @@ export const PowerModuleETA6093 = (props: {
           name={`${name}_LED_BLUE`}
           color="blue"
           footprint="0603"
+          pcbRotation={90}
         />
-        <resistor
-          name={`${name}_R_LED_BLUE`}
-          resistance="2kΩ"
-          footprint="0603"
-        />
+       
       </group>
 
       {/* ==================== 内部走线 ==================== */}

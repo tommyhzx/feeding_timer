@@ -14,64 +14,20 @@ import type { ChipProps } from "tscircuit";
  * 6 = IO1/IC (DM 方向，内部连接)
  */
 const usblc6PinLabels = {
-  pin1: "VBUS",
+  pin1: "DP",   // IO1
   pin2: "GND",
-  pin3: "DP",
-  pin4: "DM",
+  pin3: "DM",   // IO2
+  pin4: "DM",   // IO2
   pin5: "VBUS",
-  pin6: "IC",
+  pin6: "DP",   // IO1
 } as const;
-
-/**
- * SOT-23-6L footprint pads
- * Standard SOT-23-6 package with 6 pins
- */
-const usblc6FootprintPads = [
-  { portHints: ["pin1"], pcbX: -1.45, pcbY: 0.95, width: 0.9, height: 0.35 }, // VBUS
-  { portHints: ["pin2"], pcbX: 0, pcbY: 0.95, width: 0.9, height: 0.35 }, // GND
-  { portHints: ["pin3"], pcbX: 1.45, pcbY: 0.95, width: 0.9, height: 0.35 }, // DP
-  { portHints: ["pin4"], pcbX: 1.45, pcbY: -0.95, width: 0.9, height: 0.35 }, // DM
-  { portHints: ["pin5"], pcbX: 0, pcbY: -0.95, width: 0.9, height: 0.35 }, // VBUS
-  { portHints: ["pin6"], pcbX: -1.45, pcbY: -0.95, width: 0.9, height: 0.35 }, // IC
-];
 
 export const USBLC6 = (props: ChipProps<typeof usblc6PinLabels>) => (
   <chip
     {...props}
     manufacturerPartNumber="USBLC6-2"
     pinLabels={usblc6PinLabels}
-    footprint={
-      <footprint>
-        {usblc6FootprintPads.map((pad) => (
-          <smtpad
-            portHints={pad.portHints}
-            pcbX={pad.pcbX}
-            pcbY={pad.pcbY}
-            width={pad.width}
-            height={pad.height}
-            shape="rect"
-          />
-        ))}
-        {/* Chip outline */}
-        <silkscreenpath
-          route={[
-            { x: -2.0, y: 1.4 },
-            { x: 2.0, y: 1.4 },
-            { x: 2.0, y: -1.4 },
-            { x: -2.0, y: -1.4 },
-            { x: -2.0, y: 1.4 },
-          ]}
-        />
-        {/* Pin 1 indicator */}
-        <silkscreenpath
-          route={[
-            { x: -2.0, y: 1.2 },
-            { x: -1.5, y: 1.2 },
-          ]}
-          strokeWidth="0.3"
-        />
-      </footprint>
-    }
+    footprint="sot23_6"
   />
 );
 
