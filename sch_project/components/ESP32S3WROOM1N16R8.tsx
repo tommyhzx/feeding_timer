@@ -119,85 +119,19 @@ const esp32s3wroom1N16r8PinLabels = {
 /**
  * ESP32-S3-WROOM-1-N16R8 模组封装
  *
- * PCB 尺寸: 57mm x 28mm
- * 引脚间距: 2.54mm (邮票孔)
+ * 使用内置 dip footprint：
+ * - 44引脚 (22x2)
+ * - 引脚间距 p: 2.54mm
+ * - 孔径 id: 1mm
+ * - 铜径 od: 1.8mm
+ * - 列间距 w: 25.4mm (1000mil)
  */
 export const ESP32S3WROOM1N16R8 = (props: ChipProps<typeof esp32s3wroom1N16r8PinLabels>) => (
   <chip
     {...props}
     manufacturerPartNumber="ESP32-S3-WROOM-1-N16R8"
     pinLabels={esp32s3wroom1N16r8PinLabels}
-    footprint={<footprint>
-      {/* 模块尺寸: 57mm x 28mm */}
-      {/* 左排: pin1-pin22, x=-12.7mm, 中心对称 (y从+26.67mm到-26.67mm, 以y=0为中心) */}
-      {/* 右排: pin23-pin44, x=12.7mm, 中心对称 (y从+26.67mm到-26.67mm, 以y=0为中心) */}
-
-      {/* 左排引脚 - pin1 到 pin22 (中心对称：y从26.67mm到-26.67mm) */}
-      <platedhole portHints={["pin1"]} pcbX="-12.7mm" pcbY="26.67mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin2"]} pcbX="-12.7mm" pcbY="24.13mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin3"]} pcbX="-12.7mm" pcbY="21.59mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin4"]} pcbX="-12.7mm" pcbY="19.05mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin5"]} pcbX="-12.7mm" pcbY="16.51mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin6"]} pcbX="-12.7mm" pcbY="13.97mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin7"]} pcbX="-12.7mm" pcbY="11.43mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin8"]} pcbX="-12.7mm" pcbY="8.89mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin9"]} pcbX="-12.7mm" pcbY="6.35mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin10"]} pcbX="-12.7mm" pcbY="3.81mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin11"]} pcbX="-12.7mm" pcbY="1.27mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin12"]} pcbX="-12.7mm" pcbY="-1.27mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin13"]} pcbX="-12.7mm" pcbY="-3.81mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin14"]} pcbX="-12.7mm" pcbY="-6.35mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin15"]} pcbX="-12.7mm" pcbY="-8.89mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin16"]} pcbX="-12.7mm" pcbY="-11.43mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin17"]} pcbX="-12.7mm" pcbY="-13.97mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin18"]} pcbX="-12.7mm" pcbY="-16.51mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin19"]} pcbX="-12.7mm" pcbY="-19.05mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin20"]} pcbX="-12.7mm" pcbY="-21.59mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin21"]} pcbX="-12.7mm" pcbY="-24.13mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin22"]} pcbX="-12.7mm" pcbY="-26.67mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-
-      {/* 右排引脚 - pin23 到 pin44 (中心对称：y从26.67mm到-26.67mm) */}
-      <platedhole portHints={["pin23"]} pcbX="12.7mm" pcbY="26.67mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin24"]} pcbX="12.7mm" pcbY="24.13mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin25"]} pcbX="12.7mm" pcbY="21.59mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin26"]} pcbX="12.7mm" pcbY="19.05mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin27"]} pcbX="12.7mm" pcbY="16.51mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin28"]} pcbX="12.7mm" pcbY="13.97mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin29"]} pcbX="12.7mm" pcbY="11.43mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin30"]} pcbX="12.7mm" pcbY="8.89mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin31"]} pcbX="12.7mm" pcbY="6.35mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin32"]} pcbX="12.7mm" pcbY="3.81mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin33"]} pcbX="12.7mm" pcbY="1.27mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin34"]} pcbX="12.7mm" pcbY="-1.27mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin35"]} pcbX="12.7mm" pcbY="-3.81mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin36"]} pcbX="12.7mm" pcbY="-6.35mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin37"]} pcbX="12.7mm" pcbY="-8.89mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin38"]} pcbX="12.7mm" pcbY="-11.43mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin39"]} pcbX="12.7mm" pcbY="-13.97mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin40"]} pcbX="12.7mm" pcbY="-16.51mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin41"]} pcbX="12.7mm" pcbY="-19.05mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin42"]} pcbX="12.7mm" pcbY="-21.59mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin43"]} pcbX="12.7mm" pcbY="-24.13mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-      <platedhole portHints={["pin44"]} pcbX="12.7mm" pcbY="-26.67mm" holeDiameter="1mm" shape="circular_hole_with_rect_pad" rectPadWidth="2mm" rectPadHeight="2mm" />
-
-      {/* 丝印 - 模块轮廓 (30mm x 56mm) */}
-      {/* <silkscreenrect pcbX={0} pcbY={-14} width={30} height={56} /> */}
-
-      {/* Pin 1 标识 (左上角圆点) */}
-      <silkscreencircle pcbX={-14.25} pcbY={28.5} radius={0.5} />
-
-      {/* 天线区域警告丝印 (底部, 30mm x 6mm)
-      <silkscreenrect pcbX={0} pcbY={-39} width={30} height={6} /> */}
-
-      {/* courtyard (器件边界) - 以y=0为中心对称 */}
-      <courtyardoutline outline={[
-        {"x": -16, "y": 29},
-        {"x": 16, "y": 29},
-        {"x": 16, "y": -29},
-        {"x": -16, "y": -29},
-        {"x": -16, "y": 29}
-      ]} />
-    </footprint>}
+    footprint="dip44_w25.4mm_p2.54mm_id1mm_od1.8mm"
   />
 )
 

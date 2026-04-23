@@ -1,7 +1,6 @@
 import { USBConnector } from "../components/USBConnector";
 import { USBLC6 } from "../components/USBLC6";
 import { ETA6093 } from "../components/ETA6093";
-import { BatteryConnector } from "../components/BatteryConnector";
 
 /**
  * PowerModuleETA6093 - All-in-One Battery Power with ETA6093
@@ -60,10 +59,14 @@ import { BatteryConnector } from "../components/BatteryConnector";
  *   • PWR_5V      → 5V 电源输出（供 ESP32 模块使用，模块内部转3.3V）
  *   • PWR_USB_DP  → USB D+ 数据线（经 22Ω 电阻 + ESD 保护）
  *   • PWR_USB_DM  → USB D- 数据线（经 22Ω 电阻 + ESD 保护）
+ *   • BAT_PLUS    → 电池正极连接点（连接到外部电池连接器）
+ *   • GND         → 地线（连接到外部电池连接器负极）
  *
  * 使用示例：
  *   import { POWER_MODULE_PORTS } from "./modules/PowerModuleETA6093"
  *   <trace from={POWER_MODULE_PORTS.PWR_5V} to="ESP32.5V" />
+ *   <trace from="net.BAT_PLUS" to="BATTERY.pin1" />
+ *   <trace from="net.GND" to="BATTERY.pin2" />
  * ═══════════════════════════════════════════════════════════════
  *
  * Props:
@@ -75,6 +78,7 @@ export const PowerModuleETA6093 = (props: {
   name?: string;
   pcbX?: number;
   pcbY?: number;
+  pcbRotation?: number;
   schX?: number;
   schY?: number;
 }) => {
@@ -82,9 +86,13 @@ export const PowerModuleETA6093 = (props: {
     name = "PWR",
     pcbX = 0,
     pcbY = 0,
+    pcbRotation = 0,
     schX = 0,
     schY = 0,
   } = props;
+
+  // 当旋转90度或270度时，flex方向需要切换
+  const ledFlexDirection = (pcbRotation === 90 || pcbRotation === 270) ? "column" : "row";
 
   return (
     <group
@@ -92,6 +100,7 @@ export const PowerModuleETA6093 = (props: {
       // pcbGrid pcbGridCols={2} pcbGridGap="1mm"
       pcbX={pcbX}
       pcbY={pcbY}
+      pcbRotation={pcbRotation}
       schX={schX}
       schY={schY}
     >
@@ -102,28 +111,13 @@ export const PowerModuleETA6093 = (props: {
         // pcbFlex pcbFlexGap="1mm"
         schX={0}
         schY={0}
-        pcbX={-20}
+        pcbX={-10}
         pcbY={0}
       >
         {/* USB-C Connector - 放在PCB边缘，方便连接，头朝左 */}
         <USBConnector
           name={`${name}_USB`}
           pcbRotation={270}
-
-        />
-      </group>
-      <group
-        name={`${name}_PWRCONN_GROUP`}
-        // pcbFlex pcbFlexGap="1mm"
-        schX={5}
-        schY={0}
-        pcbX={10}
-        pcbY={0}
-      >
-        {/* 电池连接器 - 放在PCB底部边缘，方便连接电池 */}
-        <BatteryConnector
-          name={`${name}_BAT`}
-          pcbRotation={90}
         />
       </group>
       {/* USB ESD Protection Group - ESD芯片 + DP/DM串联电阻 */}
@@ -131,22 +125,28 @@ export const PowerModuleETA6093 = (props: {
         name={`${name}_USB_GROUP`}
         schX={0}
         schY={5}
-        pcbX={-10}
-        pcbY={0}
+        pcbX={0}
+        pcbY={2}
         // pcbRotation={90}
       >
         <USBLC6 name={`${name}_ESD`} 
-          // pcbRotation={90}
+        pcbRotation={90}
+        pcbX={0}
+        pcbY={0}
         />
         <resistor
           name={`${name}_R_DP`}
           resistance="22Ω"
           footprint="0603"
+          pcbX={-4}
+          pcbY={2}
         />
         <resistor
           name={`${name}_R_DM`}
           resistance="22Ω"
           footprint="0603"
+          pcbX={-4}
+          pcbY={-2}
         />
       </group>
 
@@ -156,8 +156,8 @@ export const PowerModuleETA6093 = (props: {
         name={`${name}_PM_GROUP`}
         schX={0}
         schY={10}
-        pcbX={0}
-        pcbY={0}
+        pcbX={8}
+        pcbY={2}
       >
         <ETA6093
           name={`${name}_PM`}
@@ -182,13 +182,18 @@ export const PowerModuleETA6093 = (props: {
           footprint="0805"
           pcbX={2}
           pcbY={-4}
+          pcbRotation={180}
         />
 
-        {/* 电感 4.7µH (BAT ↔ SW) - 横跨BAT和SW引脚 (下方) */}
+        {/* 电感 2.2µH (BAT ↔ SW) - 横跨BAT和SW引脚 (下方)
+            参考 ETA6093 数据手册推荐值
+            封装: 1210 (3225) - 功率电感，饱和电流 ≥ 1.5A
+            典型器件: Taiyo Yuden NRH3012T2R2M 或 Murata LQH31PN2R2M
+        */}
         <inductor
           name={`${name}_L`}
-          inductance="4.7µH"
-          footprint="0805"
+          inductance="2.2µH"
+          footprint="1210"
           pcbX={4}
           pcbY={0}
           pcbRotation={90}
@@ -196,11 +201,12 @@ export const PowerModuleETA6093 = (props: {
       </group>
       <group
         name={`${name}_LED_GROUP`}
-        pcbFlex pcbFlexGap="2mm" pcbAlignItems="center" pcbJustifyContent="space-between"
+        pcbFlex pcbFlexGap="1.5mm" pcbAlignItems="center" pcbFlexDirection={ledFlexDirection} pcbJustifyContent="space-between"
         schX={0}
         schY={-5}
-        pcbX={0}
-        pcbY={-10}
+        pcbX={2}
+        pcbY={-4}
+        // pcbRotation={270}
       >
         <resistor
           name={`${name}_R_LED_RED`}
@@ -282,12 +288,6 @@ export const PowerModuleETA6093 = (props: {
       <trace from={`${name}_LED_BLUE.cathode`} to={`net.GND`} />
       {/* 蓝灯由MCU GPIO控制，根据放电状态点亮 */}
 
-      {/* ========== 电池连接 ========== */}
-      {/* 电池正极 ↔ BAT_PLUS网络 */}
-      <trace from={`net.BAT_PLUS`} to={`${name}_BAT.pin1`} />
-      {/* 电池负极 → GND */}
-      <trace from={`${name}_BAT.pin2`} to="net.GND" />
-
       {/* ========== 对外接口信号 (EXPORTED SIGNALS) ========== */}
 
       {/* ETA6093 OUT (5V) → 直接输出供ESP32使用 */}
@@ -314,6 +314,7 @@ export type PowerModuleETA6093Props = {
   name?: string;
   pcbX?: number;
   pcbY?: number;
+  pcbRotation?: number;
   schX?: number;
   schY?: number;
 };

@@ -2,6 +2,7 @@ import { KeySwitchesModule } from "./modules/KeySwitchesModule";
 import { ESP32S3WROOM16R8Module } from "./modules/ESP32S3WROOM16R8Module";
 import { MAX7219Module } from "./modules/MAX7219Module";
 import { PowerModuleETA6093 } from "./modules/PowerModuleETA6093";
+import { BatteryConnector } from "./components/BatteryConnector";
 import { boardOutline } from "./boardOutline";
 
 export default () => (
@@ -17,49 +18,67 @@ export default () => (
     {/* ========== 电源模块 (ETA6093 All-in-One方案) ========== */}
     <PowerModuleETA6093
       name="PWR"
-      pcbX={0}
-      pcbY={0}
+      pcbX={-16}
+      pcbY={-4}
       schX={10}
       schY={10}
+      // pcbRotation={270}
+    />
+
+    {/* ========== 电池连接器 (外层独立组件) ========== */}
+    <BatteryConnector
+      name="BATTERY"
+      pcbX={-14}
+      pcbY={8}
+      schX={15}
+      schY={10}
+      pcbRotation={0}
     />
 
     {/* ========== ESP32-S3-WROOM-1-N16R8 模块 ========== */}
-    {/* <ESP32S3WROOM16R8Module
+    <ESP32S3WROOM16R8Module
       name="MCU"
       pcbX={0}
       pcbY={0}
       schX={0}
       schY={5}
       pcbRotation="270deg"
-      layer="bottom"
-    /> */}
+      // layer="bottom"
+    />
 
     {/* ========== 独立按键模块 ========== */}
-    {/* <KeySwitchesModule
+    <KeySwitchesModule
       name="KEY"
-      pcbX={0}
+      pcbX={55}
       pcbY={0}
       schX={0}
       schY={0}
-    /> */}
+    />
 
     {/* ========== MAX7219 显示模块接口 ========== */}
-    {/* <MAX7219Module
+    <MAX7219Module
       name="DISP"
-      pcbX={27}
-      pcbY={0}
+      pcbX={0}
+      pcbY={8}
       schX={-10}
       schY={5}
-      pcbRotation="90deg"
-    /> */}
+      pcbRotation="0deg"
+    />
 
     {/* ========== 网络定义 ========== */}
     <net name="net.MODE_SIG" />
     <net name="net.ENTER_SIG" />
+    <net name="net.BAT_PLUS" />
+
+    {/* ========== 电池连接 ========== */}
+    {/* 电池正极 ↔ PowerModule BAT_PLUS网络 */}
+    <trace from="net.BAT_PLUS" to="BATTERY.pin1" />
+    {/* 电池负极 → GND */}
+    <trace from="BATTERY.pin2" to="net.GND" />
 
     {/* ========== 电源连接 ========== */}
-    {/* PowerModule 3.3V → ESP32 3.3V */}
-    <trace from="net.PWR_3V3" to="net.ESP32_3V3" />
+    {/* PowerModule 5V → ESP32 5V_IN */}
+    <trace from="net.PWR_5V" to="net.ESP32_5V" />
 
     {/* ========== 模块间连线 ========== */}
     {/* Mode 按键: MCU.GPIO6 → KEY_MODE.pin1, KEY_MODE.pin2 → GND */}
@@ -85,8 +104,8 @@ export default () => (
     <trace from="MCU_ESP32.GPIO10" to="DISP_J1.pin5" />
 
     {/* ========== 安装孔 (与 case_base.py 圆柱对齐) ========== */}
-    <hole name="MH1" diameter="4mm" pcbX={-25} pcbY={0} />
+    {/* <hole name="MH1" diameter="4mm" pcbX={-25} pcbY={0} />
     <hole name="MH2" diameter="4mm" pcbX={23} pcbY={-8} />
-    <hole name="MH3" diameter="4mm" pcbX={23} pcbY={8} />
+    <hole name="MH3" diameter="4mm" pcbX={23} pcbY={8} /> */}
   </board>
 );

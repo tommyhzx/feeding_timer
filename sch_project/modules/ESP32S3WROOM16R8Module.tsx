@@ -10,6 +10,7 @@ import { ESP32S3WROOM1N16R8 } from "../components/ESP32S3WROOM1N16R8";
  * 对外接口信号 (EXPORTED SIGNALS)
  * ═══════════════════════════════════════════════════════════════
  * 电源信号：
+ *   • net.ESP32_5V   → 5V电源输入 (内部已连接到 ESP32 pin21)
  *   • net.ESP32_3V3  → 3.3V电源 (内部已连接到 ESP32 pin1, pin2)
  *   • net.GND        → 公共地 (内部已连接到 ESP32 GND引脚)
  *
@@ -73,6 +74,9 @@ export const ESP32S3WROOM16R8Module = (props: {
       {/* ========== 内部走线 ========== */}
 
       {/* ===== 电源连接 ===== */}
+      {/* 5V电源输入 → 对外接口 */}
+      <trace from={`${name}_ESP32.pin21`} to="net.ESP32_5V" />
+
       {/* 3.3V电源输入 → 对外接口 */}
       <trace from={`${name}_ESP32.pin1`} to="net.ESP32_3V3" />
       <trace from={`${name}_ESP32.pin2`} to="net.ESP32_3V3" />
