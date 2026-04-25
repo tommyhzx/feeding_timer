@@ -357,18 +357,22 @@ static void draw_colon(uint8_t col)
     displayBuffer[device][3] |= (1 << deviceCol);
 }
 
-void max7219_set_time(uint8_t hour, uint8_t minute)
+void max7219_set_time(uint8_t hour, uint8_t minute, uint8_t second)
 {
     // 调试输出：查看接收到的参数
     Serial.print("[DEBUG] max7219_set_time called: hour=");
     Serial.print(hour);
     Serial.print(" minute=");
-    Serial.println(minute);
+    Serial.print(minute);
+    Serial.print(" second=");
+    Serial.println(second);
 
     if (hour > 23)
         hour = 23;
     if (minute > 59)
         minute = 59;
+    if (second > 59)
+        second = 59;
 
     // 清空显示缓冲区
     memset(displayBuffer, 0, sizeof(displayBuffer));
@@ -378,30 +382,27 @@ void max7219_set_time(uint8_t hour, uint8_t minute)
     uint8_t hourOnes = hour % 10;
     uint8_t minuteTens = minute / 10;
     uint8_t minuteOnes = minute % 10;
+    uint8_t secondTens = second / 10;
+    uint8_t secondOnes = second % 10;
 
-    // 固定布局（32列）：
-    // 列3-7:  数字1（小时十位）
-    // 列8-12: 数字2（小时个位）
-    // 列15-16: 冒号（2列宽）
-    // 列19-23: 数字3（分钟十位）
-    // 列24-28: 数字4（分钟个位）
+    // 紧凑布局（32列）：
+    // 列0-4:   小时十位 (5列)
+    // 列5-9:   小时个位 (5列)
+    // 列10:    冒号 (1列)
+    // 列11-15: 分钟十位 (5列)
+    // 列16-20: 分钟个位 (5列)
+    // 列21:    冒号 (1列)
+    // 列22-26: 秒十位 (5列)
+    // 列27-31: 秒个位 (5列)
 
-    if (hourTens > 0)
-    {
-        // 两位数小时
-        draw_digit(3, hourTens); // 小时十位
-        draw_digit(8, hourOnes); // 小时个位
-    }
-    else
-    {
-        // 一位数小时：空出小时十位，小时个位从列8开始
-        draw_digit(8, hourOnes);
-    }
-
-    draw_colon(15);             // 冒号（第1列）
-    draw_colon(16);             // 冒号（第2列）
-    draw_digit(19, minuteTens); // 分钟十位
-    draw_digit(24, minuteOnes); // 分钟个位
+    draw_digit(0, hourTens);    // 小时十位
+    draw_digit(5, hourOnes);    // 小时个位
+    draw_colon(10);             // 冒号
+    draw_digit(11, minuteTens); // 分钟十位
+    draw_digit(16, minuteOnes); // 分钟个位
+    draw_colon(21);             // 冒号
+    draw_digit(22, secondTens); // 秒十位
+    draw_digit(27, secondOnes); // 秒个位
 
     // 刷新显示
     max7219_refresh();
@@ -413,7 +414,11 @@ void max7219_set_time(uint8_t hour, uint8_t minute)
     Serial.print(":");
     if (minute < 10)
         Serial.print("0");
-    Serial.println(minute);
+    Serial.print(minute);
+    Serial.print(":");
+    if (second < 10)
+        Serial.print("0");
+    Serial.println(second);
 }
 
 void max7219_test_columns(uint16_t delay_ms)

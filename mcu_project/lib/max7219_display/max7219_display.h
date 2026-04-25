@@ -33,13 +33,14 @@ void max7219_init();
 void max7219_set_minute(uint8_t minute);
 
 /**
- * @brief 设置并显示时间（时:分）
+ * @brief 设置并显示时间（时:分:秒）
  * @param hour 小时 (0-23)
  * @param minute 分钟 (0-59)
+ * @param second 秒 (0-59)
  *
- * 在 8x32 点阵屏上显示 HH:MM 格式的时间
+ * 在 8x32 点阵屏上显示 HH:MM:SS 格式的时间
  */
-void max7219_set_time(uint8_t hour, uint8_t minute);
+void max7219_set_time(uint8_t hour, uint8_t minute, uint8_t second);
 
 /**
  * @brief 设置按键反馈效果

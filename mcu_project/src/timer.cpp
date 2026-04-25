@@ -62,9 +62,11 @@ void timer_display_update(uint32_t now)
                 Serial.print("[DEBUG] wifi_get_ntp_time returned: hour=");
                 Serial.print(hour);
                 Serial.print(" minute=");
-                Serial.println(minute);
+                Serial.print(minute);
+                Serial.print(" second=");
+                Serial.println(second);
 
-                max7219_set_time(hour, minute);
+                max7219_set_time(hour, minute, second);
 
                 // 每分钟输出一次时间到串口
                 static uint8_t lastLoggedMinute = 255;
@@ -96,8 +98,9 @@ void timer_display_update(uint32_t now)
             uint32_t totalMinutes = totalSeconds / 60;
             uint8_t hours = totalMinutes / 60;
             uint8_t minutes = totalMinutes % 60;
+            uint8_t seconds = totalSeconds % 60;
 
-            max7219_set_time(hours, minutes);
+            max7219_set_time(hours, minutes, seconds);
 
             // 每秒输出一次计时器状态到串口
             static uint8_t lastLoggedSecond = 255;

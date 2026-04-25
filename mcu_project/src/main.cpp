@@ -51,13 +51,13 @@ void setup()
     // Serial.println("--- Row Test ---");
     // max7219_test_rows(500); // 逐行测试，每行0.5秒
 
-    Serial.println("--- Time Display Test ---");
-    max7219_set_time(12, 34); // 测试显示 12:34
-    delay(3000);
-    max7219_set_time(8, 5); // 测试显示 8:05
-    delay(3000);
-    max7219_set_time(23, 59); // 测试显示 23:59
-    delay(3000);
+    // Serial.println("--- Time Display Test ---");
+    // max7219_set_time(12, 34); // 测试显示 12:34
+    // delay(3000);
+    // max7219_set_time(8, 5); // 测试显示 8:05
+    // delay(3000);
+    // max7219_set_time(23, 59); // 测试显示 23:59
+    // delay(3000);
 
     // 初始化按键模块
     keyboard_init();

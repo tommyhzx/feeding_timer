@@ -5,12 +5,18 @@
 
 // ========== 按键模块配置 ==========
 
-// 独立按键GPIO定义
-constexpr uint8_t MODE_PIN = 7;   // MODE 按键 - 输入上拉 (避开 MAX7219_DIN_PIN GPIO6)
-constexpr uint8_t ENTER_PIN = 11; // ENTER 按键 - 输入上拉 (避开 Strapping 引脚 GPIO4)
+// 矩阵按键GPIO定义
+// 按键连接在 col 和 row 之间，按键按下时会导通两个引脚
+constexpr uint8_t MODE_COL_PIN = 7;  // MODE 按键列引脚 (OUTPUT)
+constexpr uint8_t MODE_ROW_PIN = 4;  // MODE 按键行引脚 (INPUT_PULLDOWN)
+constexpr uint8_t ENTER_COL_PIN = 7; // ENTER 按键列引脚 (OUTPUT) - 复用同一引脚
+constexpr uint8_t ENTER_ROW_PIN = 4; // ENTER 按键行引脚 (INPUT_PULLDOWN) - 复用同一引脚
 
 // 消抖时间 (ms)
 constexpr uint32_t DEBOUNCE_MS = 20;
+
+// 长按检测时间阈值 (ms)
+constexpr uint32_t LONG_PRESS_MS = 500;
 
 // 双击检测时间窗口 (ms)
 constexpr uint32_t DOUBLE_CLICK_MS = 300;
