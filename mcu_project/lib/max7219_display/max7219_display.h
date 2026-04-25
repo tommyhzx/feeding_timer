@@ -77,4 +77,23 @@ void max7219_test_columns(uint16_t delay_ms);
  */
 void max7219_test_rows(uint16_t delay_ms);
 
+// ========== 字体管理 ==========
+
+// 包含字体定义
+#include "fonts.h"
+
+/**
+ * @brief 设置当前使用的字体
+ * @param font 指向字体结构体的指针
+ *
+ * 注意：切换字体后需要重新调用显示函数才能看到效果
+ */
+void max7219_set_font(const Font_t* font);
+
+/**
+ * @brief 获取当前使用的字体
+ * @return 指向当前字体结构体的指针
+ */
+const Font_t* max7219_get_font(void);
+
 #endif // MAX7219_DISPLAY_H

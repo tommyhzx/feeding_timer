@@ -1,5 +1,9 @@
 #include "max7219_display.h"
+#include "fonts.h"
 #include <Arduino.h>
+
+// ========== 当前使用的字体 ==========
+static const Font_t* currentFont = &fontCompact;
 
 // ========== MAX7219 寄存器地址 ==========
 namespace MAX7219_Register
@@ -100,112 +104,6 @@ static void max7219_refresh()
     }
 }
 
-// ========== 5x7 像素数字字模 (0-9) ==========
-// 每个数字用 8 个字节表示，每个字节表示一行像素
-// 使用 bit0-bit4 表示 5 列宽度
-static const uint8_t digitPatterns[10][8] = {
-    // 0
-    {
-        0b00000,
-        0b01110,
-        0b10001,
-        0b10001,
-        0b10001,
-        0b10001,
-        0b01110,
-        0b00000},
-    // 1
-    {
-        0b00000,
-        0b00100,
-        0b01100,
-        0b00100,
-        0b00100,
-        0b00100,
-        0b01110,
-        0b00000},
-    // 2
-    {
-        0b00000,
-        0b01110,
-        0b10001,
-        0b00001,
-        0b00010,
-        0b00100,
-        0b11111,
-        0b00000},
-    // 3
-    {
-        0b00000,
-        0b01110,
-        0b10001,
-        0b00001,
-        0b00110,
-        0b00001,
-        0b01110,
-        0b00000},
-    // 4
-    {
-        0b00000,
-        0b00010,
-        0b00110,
-        0b01010,
-        0b11111,
-        0b00010,
-        0b00010,
-        0b00000},
-    // 5
-    {
-        0b00000,
-        0b11111,
-        0b10000,
-        0b11110,
-        0b00001,
-        0b10001,
-        0b01110,
-        0b00000},
-    // 6
-    {
-        0b00000,
-        0b00110,
-        0b01000,
-        0b10000,
-        0b11110,
-        0b10001,
-        0b01110,
-        0b00000},
-    // 7
-    {
-        0b00000,
-        0b11111,
-        0b00001,
-        0b00010,
-        0b00100,
-        0b00100,
-        0b00100,
-        0b00000},
-    // 8
-    {
-        0b00000,
-        0b01110,
-        0b10001,
-        0b01110,
-        0b10001,
-        0b10001,
-        0b01110,
-        0b00000},
-    // 9
-    {
-        0b00000,
-        0b01110,
-        0b10001,
-        0b01111,
-        0b00001,
-        0b00010,
-        0b01100,
-        0b00000},
-};
-
 // ========== MAX7219 显示模块实现 ==========
 
 void max7219_init()
@@ -241,7 +139,7 @@ void max7219_init()
 
 /**
  * @brief 绘制单个数字到指定列位置（支持级联设备）
- * @param col 起始列 (0-15)
+ * @param col 起始列 (0-31)
  * @param digit 数字 (0-9)
  */
 static void draw_digit(uint8_t col, uint8_t digit)
@@ -251,15 +149,16 @@ static void draw_digit(uint8_t col, uint8_t digit)
         return;
     }
 
-    const uint8_t (*pattern)[8] = &digitPatterns[digit];
+    const uint8_t (*pattern)[8] = &currentFont->digits[digit];
+    uint8_t width = currentFont->width;
 
-    // 绘制 8 行高、5 列宽的数字
+    // 绘制 8 行高、width 列宽的数字
     for (uint8_t row = 0; row < 8; row++)
     {
         // 行翻转：字模row=0(顶) → 显示row=7(底)
         uint8_t displayRow = 7 - row;
 
-        for (uint8_t c = 0; c < 5; c++)
+        for (uint8_t c = 0; c < width; c++)
         {
             uint8_t absCol = col + c;
             if (absCol < MAX7219_NUM_DEVICES * 8)
@@ -268,8 +167,8 @@ static void draw_digit(uint8_t col, uint8_t digit)
                 uint8_t device = absCol / 8;
                 uint8_t deviceCol = absCol % 8;
 
-                // 获取字模中该位置的像素
-                bool pixel = ((*pattern)[row] >> (4 - c)) & 0x01;
+                // 获取字模中该位置的像素（假设最多7列宽）
+                bool pixel = ((*pattern)[row] >> (width - 1 - c)) & 0x01;
                 if (pixel)
                 {
                     displayBuffer[device][displayRow] |= (1 << deviceCol);
@@ -385,24 +284,25 @@ void max7219_set_time(uint8_t hour, uint8_t minute, uint8_t second)
     uint8_t secondTens = second / 10;
     uint8_t secondOnes = second % 10;
 
-    // 紧凑布局（32列）：
-    // 列0-4:   小时十位 (5列)
-    // 列5-9:   小时个位 (5列)
-    // 列10:    冒号 (1列)
-    // 列11-15: 分钟十位 (5列)
-    // 列16-20: 分钟个位 (5列)
-    // 列21:    冒号 (1列)
-    // 列22-26: 秒十位 (5列)
-    // 列27-31: 秒个位 (5列)
+    // 动态布局（根据字体宽度计算位置）
+    uint8_t digitWidth = currentFont->width;
+    uint8_t pos = 0;
 
-    draw_digit(0, hourTens);    // 小时十位
-    draw_digit(5, hourOnes);    // 小时个位
-    draw_colon(10);             // 冒号
-    draw_digit(11, minuteTens); // 分钟十位
-    draw_digit(16, minuteOnes); // 分钟个位
-    draw_colon(21);             // 冒号
-    draw_digit(22, secondTens); // 秒十位
-    draw_digit(27, secondOnes); // 秒个位
+    // 计算起始位置（居中对齐）
+    // 总宽度 = 6 * digitWidth + 2 (冒号)
+    uint8_t totalWidth = 6 * digitWidth + 2;
+    uint8_t startPos = (32 - totalWidth) / 2;
+
+    pos = startPos;
+
+    draw_digit(pos, hourTens);    pos += digitWidth;
+    draw_digit(pos, hourOnes);    pos += digitWidth;
+    draw_colon(pos);              pos += 1;
+    draw_digit(pos, minuteTens);  pos += digitWidth;
+    draw_digit(pos, minuteOnes);  pos += digitWidth;
+    draw_colon(pos);              pos += 1;
+    draw_digit(pos, secondTens);  pos += digitWidth;
+    draw_digit(pos, secondOnes);
 
     // 刷新显示
     max7219_refresh();
@@ -489,4 +389,21 @@ void max7219_test_rows(uint16_t delay_ms)
     // 测试结束后清屏
     max7219_clear();
     Serial.println("[MAX7219] Row test complete");
+}
+
+// ========== 字体管理函数 ==========
+
+void max7219_set_font(const Font_t* font)
+{
+    if (font != nullptr)
+    {
+        currentFont = font;
+        Serial.print("[MAX7219] Font changed, width=");
+        Serial.println(currentFont->width);
+    }
+}
+
+const Font_t* max7219_get_font(void)
+{
+    return currentFont;
 }
