@@ -18,7 +18,7 @@ export default () => (
     {/* ========== 电源模块 (ETA6093 All-in-One方案) ========== */}
     <PowerModuleETA6093
       name="PWR"
-      pcbX={-16}
+      pcbX={-39}
       pcbY={-4}
       schX={10}
       schY={10}
@@ -28,7 +28,7 @@ export default () => (
     {/* ========== 电池连接器 (外层独立组件) ========== */}
     <BatteryConnector
       name="BATTERY"
-      pcbX={-14}
+      pcbX={-42}
       pcbY={8}
       schX={15}
       schY={10}
@@ -38,7 +38,7 @@ export default () => (
     {/* ========== ESP32-S3-WROOM-1-N16R8 模块 ========== */}
     <ESP32S3WROOM16R8Module
       name="MCU"
-      pcbX={0}
+      pcbX={-23}
       pcbY={0}
       schX={0}
       schY={5}
@@ -49,7 +49,7 @@ export default () => (
     {/* ========== 独立按键模块 ========== */}
     <KeySwitchesModule
       name="KEY"
-      pcbX={55}
+      pcbX={32}
       pcbY={0}
       schX={0}
       schY={0}
@@ -58,7 +58,7 @@ export default () => (
     {/* ========== MAX7219 显示模块接口 ========== */}
     <MAX7219Module
       name="DISP"
-      pcbX={0}
+      pcbX={-20}
       pcbY={8}
       schX={-10}
       schY={5}

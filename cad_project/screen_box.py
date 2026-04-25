@@ -10,7 +10,7 @@ from elements.mounting_holes import create_stepped_cylinder
 from elements.holes import create_m2_countersunk_hole_at
 
 # ========== 屏幕参数 ==========
-SCREEN_LENGTH = 66.0    # mm，屏幕长度
+SCREEN_LENGTH = 140.0    # mm，屏幕长度
 SCREEN_WIDTH = 33.0     # mm，屏幕宽度
 
 # ========== 盒子参数 ==========
@@ -34,8 +34,8 @@ STEP2_DIAMETER = 2.8    # 上层直径
 STEP2_HEIGHT = 3.0      # 上层高度
 
 # ========== 走线孔参数 ==========
-CABLE_HOLE_LENGTH = 15.0   # mm，Y方向长度
-CABLE_HOLE_WIDTH = 12.0     # mm，Z方向宽度
+CABLE_HOLE_LENGTH = 28.0   # mm，Y方向长度
+CABLE_HOLE_WIDTH = 6.0     # mm，Z方向宽度
 CABLE_HOLE_DEPTH = WALL_THICKNESS + 0.5  # 2.5mm，穿透槽壁
 
 # ========== 导角参数 ==========
@@ -89,9 +89,9 @@ cavity_top_z = -BOX_DEPTH / 2 + BOTTOM_THICKNESS + \
 # 四个固定柱位置
 cylinder_positions = [
     (-hole_x, -hole_y),  # 左下
-    (hole_x, -hole_y),   # 右下
+    (hole_x-10, -hole_y),   # 右下
     (-hole_x, hole_y),   # 左上
-    (hole_x, hole_y),    # 右上
+    (hole_x-10, hole_y),    # 右上
 ]
 
 for i, (x, y) in enumerate(cylinder_positions, 1):
@@ -122,30 +122,30 @@ for i, (x, y) in enumerate(cylinder_positions, 1):
 
 print(f"已添加4个屏幕固定台阶圆柱")
 
-# ========== 4. 左侧壁开走线孔 ==========
-# 创建孔切割体
+# ========== 4. 底面左侧开走线槽 ==========
+# 创建孔切割体（X=长度, Y=宽度, Z=深度）
 with BuildPart() as cable_hole_builder:
-    Box(CABLE_HOLE_DEPTH, CABLE_HOLE_LENGTH, CABLE_HOLE_WIDTH)
+    Box(CABLE_HOLE_WIDTH, CABLE_HOLE_LENGTH, CABLE_HOLE_DEPTH)
 cable_hole = cable_hole_builder.part.solid()
 
 # 计算孔的位置
 # 相对于盒子中心：
-# X方向：从内表面开始，向外穿透槽壁（-X方向）
-cable_hole_x_start = -INNER_LENGTH / 2  # -37.5mm
-cable_hole_x_offset = cable_hole_x_start - CABLE_HOLE_DEPTH / 2
+# X方向：在左侧（+X方向），距边缘一定距离
+cable_hole_x_offset = INNER_LENGTH / 2 - CABLE_HOLE_WIDTH / 2  # 距边缘3mm
 
-# Y方向：居中于侧壁
+# Y方向：居中于底面
 cable_hole_y_center = 0
 
-# Z方向：在底板上方5mm的位置
-cable_hole_z_offset = -BOX_DEPTH / 2 + CABLE_HOLE_WIDTH / 2 + 5
+# Z方向：在底面开槽，穿透底板
+# 槽中心应该在底板厚度中心，深度需要穿透底板
+cable_hole_z_offset = -BOX_DEPTH / 2 + BOTTOM_THICKNESS / 2
 
 cable_hole = cable_hole.translate(
     Vector(cable_hole_x_offset, cable_hole_y_center, cable_hole_z_offset))
 
 # 在盒子上开孔
 screen_box = screen_box - cable_hole
-print(f"已在左侧壁开走线孔: {CABLE_HOLE_LENGTH} x {CABLE_HOLE_WIDTH} mm")
+print(f"已在底面左侧开走线槽: {CABLE_HOLE_LENGTH} x {CABLE_HOLE_WIDTH} mm")
 
 # ========== 5. 背面开立柱固定螺丝孔（M2沉头螺丝孔） ==========
 # 在屏幕盒背面（-Z方向）开两个沉头螺丝孔

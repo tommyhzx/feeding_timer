@@ -11,8 +11,8 @@ from elements.mounting_holes import create_stepped_cylinder, create_usb_hole_cut
 from elements.holes import create_m2_countersunk_hole_at
 
 # ========== PCB参数 ==========
-PCB_LENGTH = 59.0    # mm，PCB长度（X方向）
-PCB_WIDTH = 32.0     # mm，PCB宽度（Y方向）
+PCB_LENGTH = 107.0    # mm，PCB长度（X方向）
+PCB_WIDTH = 33.0     # mm，PCB宽度（Y方向）
 
 # ========== 盒子参数 ==========
 BOX_HEIGHT = 20.0    # mm，盒子高度（Z方向）
