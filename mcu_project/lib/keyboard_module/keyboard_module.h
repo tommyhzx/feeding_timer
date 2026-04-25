@@ -6,8 +6,8 @@
 // ========== 按键模块配置 ==========
 
 // 独立按键GPIO定义
-constexpr uint8_t MODE_PIN = 6;   // MODE 按键 - 输入上拉
-constexpr uint8_t ENTER_PIN = 11; // ENTER 按键 - 输入上拉 (修改：避开 Strapping 引脚 GPIO4)
+constexpr uint8_t MODE_PIN = 7;   // MODE 按键 - 输入上拉 (避开 MAX7219_DIN_PIN GPIO6)
+constexpr uint8_t ENTER_PIN = 11; // ENTER 按键 - 输入上拉 (避开 Strapping 引脚 GPIO4)
 
 // 消抖时间 (ms)
 constexpr uint32_t DEBOUNCE_MS = 20;

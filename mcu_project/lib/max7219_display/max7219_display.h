@@ -6,15 +6,15 @@
 // ========== MAX7219 显示模块配置 ==========
 
 // GPIO 引脚定义
-constexpr uint8_t MAX7219_DIN_PIN = 7;   // Data In
+constexpr uint8_t MAX7219_DIN_PIN = 6;   // Data In
 constexpr uint8_t MAX7219_CS_PIN = 8;    // Chip Select
 constexpr uint8_t MAX7219_CLK_PIN = 10;  // Clock (修改：避开 Strapping 引脚 GPIO15)
 
 // MAX7219 设备配置
-constexpr uint8_t MAX7219_NUM_DEVICES = 2;  // 两个 8x8 点阵模块级联（8x16）
+constexpr uint8_t MAX7219_NUM_DEVICES = 4;  // 四个 8x8 点阵模块级联（8x32）
 
 // 亮度设置 (0-15)
-constexpr uint8_t MAX7219_INTENSITY = 8;
+constexpr uint8_t MAX7219_INTENSITY = 1;
 
 // ========== MAX7219 显示模块接口 ==========
 
@@ -37,7 +37,7 @@ void max7219_set_minute(uint8_t minute);
  * @param hour 小时 (0-23)
  * @param minute 分钟 (0-59)
  *
- * 在 8x16 点阵屏上显示 HH:MM 格式的时间
+ * 在 8x32 点阵屏上显示 HH:MM 格式的时间
  */
 void max7219_set_time(uint8_t hour, uint8_t minute);
 
@@ -59,5 +59,21 @@ void max7219_clear();
  * @param intensity 亮度值 (0-15)
  */
 void max7219_set_intensity(uint8_t intensity);
+
+/**
+ * @brief 逐列测试显示（调试用）
+ * @param delay_ms 每列显示的延时（毫秒）
+ *
+ * 从左到右依次点亮每一列，用于检测屏幕和硬件连接
+ */
+void max7219_test_columns(uint16_t delay_ms);
+
+/**
+ * @brief 逐行测试显示（调试用）
+ * @param delay_ms 每行显示的延时（毫秒）
+ *
+ * 从上到下依次点亮每一行，用于检测屏幕和硬件连接
+ */
+void max7219_test_rows(uint16_t delay_ms);
 
 #endif // MAX7219_DISPLAY_H
