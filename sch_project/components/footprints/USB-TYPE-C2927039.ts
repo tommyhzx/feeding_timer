@@ -59,12 +59,17 @@ export const USBTYPEC2927039PlatedHoles: Array<{
   portHints: string[];
   pcbX: number;
   pcbY: number;
-  diameter: number;
+  holeWidth: number;
+  holeHeight: number;
+  rectPadWidth: number;
+  rectPadHeight: number;
 }> = [
-  { portHints: ["pin13"], pcbX: -4.32, pcbY: 1.574, diameter: 0.8 },
-  { portHints: ["pin14"], pcbX: -4.32, pcbY: -2.626, diameter: 0.8 },
-  { portHints: ["pin15"], pcbX: 4.32, pcbY: -2.626, diameter: 0.8 },
-  { portHints: ["pin16"], pcbX: 4.32, pcbY: 1.574, diameter: 0.8 },
+  // Top holes (larger)
+  { portHints: ["pin13"], pcbX: -4.32, pcbY: 1.574, holeWidth: 1.7, holeHeight: 0.6, rectPadWidth: 2.1, rectPadHeight: 1.0 },
+  { portHints: ["pin16"], pcbX: 4.32, pcbY: 1.574, holeWidth: 1.7, holeHeight: 0.6, rectPadWidth: 2.1, rectPadHeight: 1.0 },
+  // Bottom holes (smaller)
+  { portHints: ["pin14"], pcbX: -4.32, pcbY: -2.626, holeWidth: 1.2, holeHeight: 0.6, rectPadWidth: 1.6, rectPadHeight: 1.0 },
+  { portHints: ["pin15"], pcbX: 4.32, pcbY: -2.626, holeWidth: 1.2, holeHeight: 0.6, rectPadWidth: 1.6, rectPadHeight: 1.0 },
 ];
 
 // Package dimensions

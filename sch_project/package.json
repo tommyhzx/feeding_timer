@@ -19,11 +19,11 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
-    "tscircuit": "^0.0.1623",
+    "tscircuit": "^0.0.1673",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "circuit-json-to-kicad": "^0.0.104",
-    "circuit-json": "^0.0.407"
+    "circuit-json": "^0.0.407",
+    "circuit-json-to-kicad": "^0.0.104"
   }
 }
