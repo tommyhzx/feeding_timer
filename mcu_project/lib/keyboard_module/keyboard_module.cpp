@@ -6,7 +6,7 @@
 
 // 按键配置 - 单个矩阵按键
 KeyInfo keys[1] = {
-    {0, HIGH, HIGH, 0, 0, 0, 0}  // 单个按键（gpio 字段不再使用）
+    {0, LOW, LOW, 0, 0, 0, 0} // 单个按键（初始状态设为 LOW/释放）
 };
 
 // ========== 弱定义回调函数 (可在 main.cpp 中覆盖) ==========
@@ -66,11 +66,23 @@ void keyboard_update(uint32_t now)
     static bool pendingShortPress = false;
     static uint32_t shortPressTriggerTime = 0;
     static bool longPressTriggered = false;
+    static uint32_t lastDebugPrintTime = 0;
+
+    // 每500ms打印一次当前状态（仅当按键按下时）
+    KeyInfo &debugKey = keys[0];
+    if (debugKey.currentState == HIGH && now - lastDebugPrintTime > 500)
+    {
+        Serial.print("Still pressed, duration=");
+        Serial.print(now - debugKey.pressStartTime);
+        Serial.print("ms, longPressTriggered=");
+        Serial.println(longPressTriggered);
+        lastDebugPrintTime = now;
+    }
 
     // 矩阵按键扫描
     // 1. 将 COL 设为 HIGH
     digitalWrite(MODE_COL_PIN, HIGH);
-    delayMicroseconds(10);  // 短暂延时让电平稳定
+    delayMicroseconds(10); // 短暂延时让电平稳定
 
     // 2. 读取 ROW 状态 (HIGH = 按下, LOW = 释放)
     bool rawState = digitalRead(MODE_ROW_PIN);
@@ -86,12 +98,19 @@ void keyboard_update(uint32_t now)
     {
         key.lastChangeTime = now;
         key.currentState = rawState;
-        Serial.print("[KEY] GPIO");
-        Serial.print(MODE_COL_PIN);
-        Serial.print("/GPIO");
-        Serial.print(MODE_ROW_PIN);
-        Serial.print(" -> ");
-        Serial.println(rawState ? "HIGH (pressed)" : "LOW (released)");
+        Serial.print("State change detected: rawState=");
+        Serial.print(rawState ? "HIGH (pressed)" : "LOW (released)");
+        Serial.print(", time=");
+        Serial.println(now);
+
+        // 立即记录按下时间（不等消抖），避免长按检测使用旧时间戳
+        if (rawState == HIGH)
+        {
+            key.pressStartTime = now;
+            longPressTriggered = false;
+            Serial.print("PressStartTime updated to ");
+            Serial.println(now);
+        }
     }
 
     // 等待消抖时间后确认状态
@@ -99,15 +118,16 @@ void keyboard_update(uint32_t now)
         (key.lastStableState != key.currentState))
     {
         key.lastStableState = key.currentState;
+        Serial.print("Debounced state: ");
+        Serial.print(key.currentState ? "HIGH (pressed)" : "LOW (released)");
+        Serial.print(", longPressTriggered=");
+        Serial.println(longPressTriggered);
 
         if (key.currentState == HIGH)
         {
-            // 按键按下
-            Serial.println("Button pressed");
-
-            // 记录按下时间
-            key.pressStartTime = now;
-            longPressTriggered = false;
+            // 按键按下消抖确认 - 只处理视觉反馈
+            // pressStartTime 和 longPressTriggered 已在状态变化时更新
+            Serial.println("Button press confirmed (debounce)");
 
             // MAX7219 视觉反馈 - 增加亮度
             max7219_set_feedback(true);
@@ -115,10 +135,10 @@ void keyboard_update(uint32_t now)
         else
         {
             // 按键释放
-            Serial.println("Button released");
-
             // MAX7219 视觉反馈 - 恢复正常亮度
             max7219_set_feedback(false);
+            Serial.print("Button released, longPressTriggered=");
+            Serial.println(longPressTriggered);
 
             // 如果不是长按触发的释放，则检查短按/双击
             if (!longPressTriggered)
@@ -127,8 +147,6 @@ void keyboard_update(uint32_t now)
                 if (now - key.lastReleaseTime < DOUBLE_CLICK_MS)
                 {
                     key.clickCount++;
-                    Serial.print("Click count: ");
-                    Serial.println(key.clickCount);
 
                     // 检测到双击
                     if (key.clickCount >= 2)
@@ -156,7 +174,9 @@ void keyboard_update(uint32_t now)
             else
             {
                 // 长按后释放，重置状态
+                Serial.println("Long press released - resetting longPressTriggered");
                 longPressTriggered = false;
+                key.clickCount = 0; // 清除点击计数，防止后续误触发
             }
         }
     }
@@ -164,23 +184,40 @@ void keyboard_update(uint32_t now)
     // 检查长按（在按键持续按下时）
     if (key.currentState == HIGH && !longPressTriggered)
     {
-        if (now - key.pressStartTime >= LONG_PRESS_MS)
+        uint32_t pressDuration = now - key.pressStartTime;
+        // 每200ms打印一次持续时间，帮助调试
+        if (pressDuration > 0 && pressDuration % 200 < 20)
         {
-            Serial.println("Long press detected! -> Toggle mode");
+            Serial.print("Press duration: ");
+            Serial.print(pressDuration);
+            Serial.println("ms");
+        }
+        if (pressDuration >= LONG_PRESS_MS)
+        {
+            Serial.print("Long press detected! duration=");
+            Serial.print(pressDuration);
+            Serial.print("ms, pressStartTime=");
+            Serial.print(key.pressStartTime);
+            Serial.print(", now=");
+            Serial.println(now);
+            Serial.println("-> Toggle mode");
             keyboard_on_mode_pressed();
             longPressTriggered = true;
             pendingShortPress = false;
         }
     }
 
-    // 检查是否需要触发短按回调
-    if (pendingShortPress && now >= shortPressTriggerTime)
+    // 检查是否需要触发短按回调（只在按键已释放且未长按时触发）
+    if (pendingShortPress && now >= shortPressTriggerTime && key.currentState == LOW && !longPressTriggered)
     {
-        if (key.clickCount == 1 && !longPressTriggered)
-        {
-            Serial.println("Short press detected! -> Toggle start/stop");
-            keyboard_on_enter_short_press();
-        }
+        Serial.println("Short press detected! -> Toggle start/stop");
+        keyboard_on_enter_short_press();
+        pendingShortPress = false;
+        key.clickCount = 0;
+    }
+    // 超时清除待处理状态
+    else if (pendingShortPress && now >= shortPressTriggerTime)
+    {
         pendingShortPress = false;
         key.clickCount = 0;
     }

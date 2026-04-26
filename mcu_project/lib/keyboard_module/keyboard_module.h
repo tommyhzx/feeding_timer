@@ -16,7 +16,7 @@ constexpr uint8_t ENTER_ROW_PIN = 4; // ENTER 按键行引脚 (INPUT_PULLDOWN) -
 constexpr uint32_t DEBOUNCE_MS = 20;
 
 // 长按检测时间阈值 (ms)
-constexpr uint32_t LONG_PRESS_MS = 500;
+constexpr uint32_t LONG_PRESS_MS = 1000;
 
 // 双击检测时间窗口 (ms)
 constexpr uint32_t DOUBLE_CLICK_MS = 300;

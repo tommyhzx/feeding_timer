@@ -200,11 +200,6 @@ void max7219_set_minute(uint8_t minute)
 
     // 刷新显示
     max7219_refresh();
-
-    Serial.print("[MAX7219] Display set to: ");
-    if (minute < 10)
-        Serial.print("0");
-    Serial.println(minute);
 }
 
 void max7219_set_feedback(bool pressed)
@@ -258,14 +253,6 @@ static void draw_colon(uint8_t col)
 
 void max7219_set_time(uint8_t hour, uint8_t minute, uint8_t second)
 {
-    // 调试输出：查看接收到的参数
-    Serial.print("[DEBUG] max7219_set_time called: hour=");
-    Serial.print(hour);
-    Serial.print(" minute=");
-    Serial.print(minute);
-    Serial.print(" second=");
-    Serial.println(second);
-
     if (hour > 23)
         hour = 23;
     if (minute > 59)
@@ -306,19 +293,6 @@ void max7219_set_time(uint8_t hour, uint8_t minute, uint8_t second)
 
     // 刷新显示
     max7219_refresh();
-
-    Serial.print("[MAX7219] Time set to: ");
-    if (hour < 10)
-        Serial.print("0");
-    Serial.print(hour);
-    Serial.print(":");
-    if (minute < 10)
-        Serial.print("0");
-    Serial.print(minute);
-    Serial.print(":");
-    if (second < 10)
-        Serial.print("0");
-    Serial.println(second);
 }
 
 void max7219_test_columns(uint16_t delay_ms)

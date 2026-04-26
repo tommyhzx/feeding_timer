@@ -135,11 +135,7 @@ void wifi_update(uint32_t now)
     }
 
     // 更新NTP时间（由NTPClient内部控制更新间隔）
-    if (timeClient.update())
-    {
-        Serial.print("NTP时间已更新: ");
-        Serial.println(timeClient.getFormattedTime());
-    }
+    timeClient.update();
 }
 
 bool wifi_get_ntp_time(int *hour, int *minute, int *second)

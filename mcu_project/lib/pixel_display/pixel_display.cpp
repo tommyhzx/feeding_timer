@@ -216,8 +216,6 @@ void pixel_set_number(uint8_t number)
     draw_digit(5, 1, ones, pixels.Color(0, 255, 0));
 
     pixels.show();
-    Serial.print("[PIXEL] Display set to: ");
-    Serial.println(number);
 }
 
 /**
@@ -254,8 +252,6 @@ void pixel_switch_mode()
 {
     // 切换到下一个模式
     pixelMode = (pixelMode + 1) % 3;
-    Serial.print("[PIXEL] Mode switched to: ");
-    Serial.println(pixelMode);
 
     // 清空像素屏
     pixels.clear();

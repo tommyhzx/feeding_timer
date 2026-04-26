@@ -58,32 +58,7 @@ void timer_display_update(uint32_t now)
             int hour, minute, second;
             if (wifi_get_ntp_time(&hour, &minute, &second))
             {
-                // 调试输出：查看传入的原始值
-                Serial.print("[DEBUG] wifi_get_ntp_time returned: hour=");
-                Serial.print(hour);
-                Serial.print(" minute=");
-                Serial.print(minute);
-                Serial.print(" second=");
-                Serial.println(second);
-
                 max7219_set_time(hour, minute, second);
-
-                // 每分钟输出一次时间到串口
-                static uint8_t lastLoggedMinute = 255;
-                if (minute != lastLoggedMinute)
-                {
-                    lastLoggedMinute = minute;
-                    Serial.print("[时钟] ");
-                    if (hour < 10)
-                        Serial.print("0");
-                    Serial.print(hour);
-                    Serial.print(":");
-                    if (minute < 10)
-                        Serial.print("0");
-                    Serial.print(minute);
-                    Serial.print(" | Wi-Fi: ");
-                    Serial.println(wifi_get_status_str());
-                }
             }
             else
             {
@@ -101,41 +76,6 @@ void timer_display_update(uint32_t now)
             uint8_t seconds = totalSeconds % 60;
 
             max7219_set_time(hours, minutes, seconds);
-
-            // 每秒输出一次计时器状态到串口
-            static uint8_t lastLoggedSecond = 255;
-            uint8_t currentSecond = totalSeconds % 60;
-            if (currentSecond != lastLoggedSecond)
-            {
-                lastLoggedSecond = currentSecond;
-
-                Serial.print("[计时器] ");
-                if (hours < 10)
-                    Serial.print("0");
-                Serial.print(hours);
-                Serial.print(":");
-                if (minutes < 10)
-                    Serial.print("0");
-                Serial.print(minutes);
-                Serial.print(":");
-                if (currentSecond < 10)
-                    Serial.print("0");
-                Serial.print(currentSecond);
-                Serial.print(" | 状态: ");
-
-                switch (timerState)
-                {
-                case TIMER_IDLE:
-                    Serial.println("空闲");
-                    break;
-                case TIMER_RUNNING:
-                    Serial.println("运行中");
-                    break;
-                case TIMER_PAUSED:
-                    Serial.println("暂停");
-                    break;
-                }
-            }
         }
     }
 }
@@ -147,8 +87,8 @@ void timer_toggle_mode(void)
     if (currentMode == MODE_CLOCK)
     {
         currentMode = MODE_TIMER;
-        timerState = TIMER_IDLE;
-        timerElapsedMs = 0;
+        // 不重置 timerState 和 timerElapsedMs
+        // 让计时器在后台保持运行状态
         Serial.println(">>> 切换到计时器模式");
     }
     else

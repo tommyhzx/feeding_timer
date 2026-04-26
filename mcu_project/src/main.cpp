@@ -53,23 +53,9 @@ void setup()
 
     // Serial.println("--- Time Display Test ---");
 
-    // 测试紧凑字体（默认）
-    // Serial.println("Font: Compact (5 cols)");
-    // max7219_set_font(&fontCompact);
-    // max7219_set_time(12, 34, 56);
-    // delay(3000);
-
-    // 测试窄字体（4列宽，带边距）
-    // Serial.println("Font: Narrow (4 cols)");
-    // max7219_set_font(&fontNarrow);
-    // max7219_set_time(12, 34, 56);
-    // delay(3000);
-
-    // 测试点阵字体（5列宽，点阵风格）
-    Serial.println("Font: Dotted (5 cols)");
     max7219_set_font(&fontSegment);
-    max7219_set_time(12, 34, 56);
-    delay(3000);
+    // max7219_set_time(12, 34, 56);
+    // delay(3000);
     // max7219_set_time(8, 5, 9); // 测试显示 8:05:09
     // delay(3000);
     // max7219_set_time(23, 59, 59); // 测试显示 23:59:59
