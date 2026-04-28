@@ -16,8 +16,11 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "types": [
-      "tscircuit",
-      "node"
+      "tscircuit"
+    ],
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
     ]
   },
   "include": [

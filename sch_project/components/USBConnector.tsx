@@ -108,7 +108,7 @@ const usbCShieldHoles = [
 const usbCDims = { width: 8.74, height: 5.35 };
 
 export const USBConnector = (props: ChipProps<typeof usbCPinLabels>) => (
-  <connector
+  <chip
     {...props}
     manufacturerPartNumber="USB-TYPEC"
     pinLabels={usbCPinLabels}

@@ -19,11 +19,13 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
-    "tscircuit": "^0.0.1673",
+    "tscircuit": "^0.0.1679",
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "circuit-json": "^0.0.407",
-    "circuit-json-to-kicad": "^0.0.104"
+    "circuit-json-to-kicad": "^0.0.104",
+    "kicad-footprints": "https://gitlab.com/kicad/libraries/kicad-footprints",
+    "kicad-libraries": "https://github.com/espressif/kicad-libraries"
   }
 }
