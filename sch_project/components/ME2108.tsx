@@ -58,6 +58,8 @@ export const ME2108 = (props: ChipProps<typeof me2108PinLabels>) => (
     {...props}
     manufacturerPartNumber="ME2108"
     pinLabels={me2108PinLabels}
+    schPinSpacing={0.2}
+    schWidth={2}
     footprint={
       <footprint>
         {/* 引脚焊盘 */}

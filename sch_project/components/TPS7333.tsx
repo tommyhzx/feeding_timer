@@ -43,6 +43,8 @@ export const TPS7333 = (props: ChipProps<typeof tps7333PinLabels>) => (
     {...props}
     manufacturerPartNumber="TPS7333DBVR"
     pinLabels={tps7333PinLabels}
+    schPinSpacing={0.2}
+    schWidth={2}
     footprint={
       <footprint>
         {/* 引脚焊盘 */}

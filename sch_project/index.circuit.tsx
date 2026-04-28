@@ -9,6 +9,8 @@ export default () => (
   <board
     autorouter="auto-local"
     defaultTraceWidth="0.5mm"
+    schGrid={true}
+    schGridGap={1}
     pcbStyle={{
     viaPadDiameter: "0.8mm",
     viaHoleDiameter: "0.4mm",
@@ -20,8 +22,8 @@ export default () => (
       name="PWR"
       pcbX={-39}
       pcbY={-4}
-      schX={10}
-      schY={10}
+      schX={8}
+      schY={8}
       // pcbRotation={270}
     />
 
@@ -30,8 +32,8 @@ export default () => (
       name="BATTERY"
       pcbX={-42}
       pcbY={8}
-      schX={15}
-      schY={10}
+      schX={12}
+      schY={8}
       pcbRotation={0}
     />
 
@@ -41,7 +43,7 @@ export default () => (
       pcbX={-23}
       pcbY={0}
       schX={0}
-      schY={5}
+      schY={4}
       pcbRotation="270deg"
       // layer="bottom"
     />
@@ -60,8 +62,8 @@ export default () => (
       name="DISP"
       pcbX={-20}
       pcbY={8}
-      schX={-10}
-      schY={5}
+      schX={-8}
+      schY={4}
       pcbRotation="0deg"
     />
 

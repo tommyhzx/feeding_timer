@@ -28,6 +28,8 @@ export const USBLC6 = (props: ChipProps<typeof usblc6PinLabels>) => (
     manufacturerPartNumber="USBLC6-2"
     pinLabels={usblc6PinLabels}
     footprint="sot23_6"
+    schPinSpacing={0.2}
+    schWidth={2}
   />
 );
 

@@ -46,6 +46,8 @@ export const TP4056 = (props: ChipProps<typeof tp4056PinLabels>) => (
     {...props}
     manufacturerPartNumber="TP4056"
     pinLabels={tp4056PinLabels}
+    schPinSpacing={0.2}
+    schWidth={2}
     footprint={
       <footprint>
         {/* 引脚焊盘 */}

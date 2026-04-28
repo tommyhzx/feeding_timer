@@ -25,6 +25,8 @@ export const BatteryConnector = (props: ChipProps<typeof batteryConnectorPinLabe
     manufacturerPartNumber="PH2.0-2P"
     pinLabels={batteryConnectorPinLabels}
     footprint="pinrow2"
+    schPinSpacing={0.2}
+    schWidth={1}
   />
 );
 

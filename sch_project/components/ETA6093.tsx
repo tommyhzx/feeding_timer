@@ -38,6 +38,8 @@ export const ETA6093 = (props: ChipProps<typeof eta6093PinLabels>) => (
     manufacturerPartNumber="ETA6093S2F"
     pinLabels={eta6093PinLabels}
     footprint="sot23_5"
+    schPinSpacing={0.2}
+    schWidth={2}
   />
 );
 

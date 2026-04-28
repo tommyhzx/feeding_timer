@@ -112,6 +112,8 @@ export const USBConnector = (props: ChipProps<typeof usbCPinLabels>) => (
     {...props}
     manufacturerPartNumber="USB-TYPEC"
     pinLabels={usbCPinLabels}
+    schPinSpacing={0.2}
+    schWidth={2}
     footprint={
       <footprint>
         {/* 信号焊盘 (SMT) */}
