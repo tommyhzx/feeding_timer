@@ -65,27 +65,26 @@ export const ESP32S3WROOM16R8Module = (props: {
       {/* ========== 组件放置 ========== */}
 
       {/* ESP32-S3-WROOM-1-N16R8 模块 */}
-      <ESP32S3WROOM1N16R8 name={`${name}_ESP32`}
-      pcbX={0}
-      pcbY={0}
-      layer={layer}
+      <ESP32S3WROOM1N16R8
+        name={`${name}_ESP32`}
+        pcbX={0}
+        pcbY={0}
+        layer={layer}
+        connections={{
+          // 5V 电源输入 (唯一引脚，可用标签名)
+          pin21: "net.ESP32_5V",
+
+          // 3.3V 电源输入 (两个引脚，需明确指定)
+          pin1: "net.ESP32_3V3",
+          pin2: "net.ESP32_3V3",
+
+          // GND 引脚 (四个引脚，需明确指定)
+          pin22: "net.GND",
+          pin23: "net.GND",
+          pin43: "net.GND",
+          pin44: "net.GND",
+        }}
       />
-
-      {/* ========== 内部走线 ========== */}
-
-      {/* ===== 电源连接 ===== */}
-      {/* 5V电源输入 → 对外接口 */}
-      <trace from={`${name}_ESP32.pin21`} to="net.ESP32_5V" />
-
-      {/* 3.3V电源输入 → 对外接口 */}
-      <trace from={`${name}_ESP32.pin1`} to="net.ESP32_3V3" />
-      <trace from={`${name}_ESP32.pin2`} to="net.ESP32_3V3" />
-
-      {/* 所有GND引脚连接到公共地 */}
-      <trace from={`${name}_ESP32.pin22`} to="net.GND" />
-      <trace from={`${name}_ESP32.pin23`} to="net.GND" />
-      <trace from={`${name}_ESP32.pin43`} to="net.GND" />
-      <trace from={`${name}_ESP32.pin44`} to="net.GND" />
 
       {/* 注意: GPIO4 (pin4) 和 GPIO6 (pin6) 引脚已预留，可在 index.circuit.tsx 中连接外部设备 */}
     </group>

@@ -9,8 +9,7 @@ export default () => (
   <board
     autorouter="auto-local"
     defaultTraceWidth="0.5mm"
-    schGrid={true}
-    schGridGap={1}
+    // routingDisabled
     pcbStyle={{
     viaPadDiameter: "0.8mm",
     viaHoleDiameter: "0.4mm",
@@ -43,7 +42,7 @@ export default () => (
       pcbX={-23}
       pcbY={0}
       schX={0}
-      schY={4}
+      schY={6}
       pcbRotation="270deg"
       // layer="bottom"
     />

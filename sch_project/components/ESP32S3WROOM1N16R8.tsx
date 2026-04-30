@@ -134,6 +134,7 @@ export const ESP32S3WROOM1N16R8 = (props: ChipProps<typeof esp32s3wroom1N16r8Pin
     footprint="dip44_w25.4mm_p2.54mm_id1mm_od1.8mm"
     schPinSpacing={0.2}
     schWidth={2}
+    schHeight={5}
   />
 )
 

@@ -71,37 +71,37 @@ const usbCShieldHoles = [
     portHints: ["pin13"],
     pcbX: -4.32,
     pcbY: 1.574,
-    holeWidth: 1.7,
-    holeHeight: 0.6,
-    rectPadWidth: 2.1,
-    rectPadHeight: 1.0,
+    holeWidth: 0.6,
+    holeHeight: 1.7,
+    rectPadWidth: 1.0,
+    rectPadHeight: 2.1,
   }, // 左上
   {
     portHints: ["pin16"],
     pcbX: 4.32,
     pcbY: 1.574,
-    holeWidth: 1.7,
-    holeHeight: 0.6,
-    rectPadWidth: 2.1,
-    rectPadHeight: 1.0,
+    holeWidth: 0.6,
+    holeHeight: 1.7,
+    rectPadWidth: 1.0,
+    rectPadHeight: 2.1,
   }, // 右上
   {
     portHints: ["pin14"],
     pcbX: -4.32,
     pcbY: -2.606,
-    holeWidth: 1.2,
-    holeHeight: 0.6,
-    rectPadWidth: 1.6,
-    rectPadHeight: 1.0,
+    holeWidth: 0.6,
+    holeHeight: 1.2,
+    rectPadWidth: 1.0,
+    rectPadHeight: 1.6,
   }, // 左下
   {
     portHints: ["pin15"],
     pcbX: 4.32,
     pcbY: -2.606,
-    holeWidth: 1.2,
-    holeHeight: 0.6,
-    rectPadWidth: 1.6,
-    rectPadHeight: 1.0,
+    holeWidth: 0.6,
+    holeHeight: 1.2,
+    rectPadWidth: 1.0,
+    rectPadHeight: 1.6,
   }, // 右下
 ];
 
